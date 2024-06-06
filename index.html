@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="css/styles.css" rel="stylesheet" />
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
+    <!-- DataTables JavaScript -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    
+<!-- MIGHT NOT NEED DATATABLES FIXED HEADERS, take out if superfluous -->
+    <!-- FixedHeader CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedheader/3.2.1/css/fixedHeader.dataTables.min.css"/>
+    <!-- FixedHeader JavaScript -->
+    <script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.2.1/js/dataTables.fixedHeader.min.js"></script>
+
+</head>
+<body>
+
+    <div class="container">
+    <h1>Project 2 Live Demo</h1>
+    
+    <div class=" calendarContainer card-mp">
+    <!-- calendar goes here -->
+    </div>
+<!-- 
+    <div class="form-container hidden">
+        <form id="timeEntryForm">
+            <div class="me-2 mt-3">
+                <div class="mb-2">
+                    <label for="startTime">Start time</label>
+                    <input type="time" id="startTime" class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                    <label for="endTime">End time</label>
+                    <input type="time" id="endTime" class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                    <label for="breakDuration">Break</label>
+                    <input type="number" id="breakDuration" class="form-control form-control-sm" placeholder="0">
+                </div>
+                <div class="mb-2">
+                    <label for="notes">Total</label>
+                    <input type="number" id="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </div>
+            </div>
+        </form>
+    </div> -->
+
+</div>
+
+            <!-- Bootstrap core JS-->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Core theme JS-->
+            <script src="js/scripts.js"></script>
+
+    <script>
+       
+
+        /* EVENTS */
+            $(()=>{
+                console.log("Hello World!");
+                buildCalendar();
+            })
+
+            $(document).on('change', '.timeInp', function(){
+                // start time, end time, or break duration was modified...update total hours for day
+                console.log("Time changed!");
+                // retrieve values from form
+                let start = $(this).closest('td').find('input[name="startTime"]').val();
+                let end = $(this).closest('td').find('input[name="endTime"]').val();
+                let breakTime = $(this).closest('td').find('input[name="breakDuration"]').val();
+                // console.log({start});
+                // console.log({end});
+                // console.log({breakTime});
+                // retrieve date from cell
+                let focusDate = $(this).closest('td').data('date');
+                // console.log({focusDate});
+                // retrieve total input field
+                let total = $(this).closest('td').find('input[name="dayTotal"]');
+                // console.log({total});
+                // convert start/end times to datetime objects
+                let startDateTime = new Date(`${focusDate}T${start}:00`);
+                let endDateTime = new Date(`${focusDate}T${end}:00`);
+                // console.log({startDateTime});
+                // console.log({endDateTime});
+
+                // calculate difference between start and end times (in minutes)
+                let diffMinutes = (endDateTime - startDateTime) / 60000;
+                // accommodate for break time
+                let totalMinutes = diffMinutes - breakTime;
+                // convert minutes to hours/minutes
+                let hours = Math.floor(totalMinutes / 60);
+                let minutes = totalMinutes % 60;
+                // calculate total hours worked
+                let totalTimeWorked = (hours + (minutes / 60)).toFixed(2);
+                // console.log({totalTimeWorked});
+                // populate total field
+                total.val(totalTimeWorked);
+            })
+
+            $(document).on('click', 'td', function(){
+                // console.log("Clicked on a day!");       
+                if($(this).find('form').length > 0){
+                    // don't do anything if form is already displayed
+                    return;
+                }else{
+                    // get date from clicked cell
+                    let td = $(this);
+                    let date = td.data('date');
+
+                    // get any existing data from local storage
+                    let timesheetData = getStoredData();
+                    let data = timesheetData[date] || {startTime: '', endTime: '', breakDuration: 0};
+
+                    // // $('.form-container').addClass('hidden').removeClass('unhidden');
+                    // $('.form-container').addClass('unhidden').removeClass('hidden');
+
+                    // form for time entry
+                    let form = `<form class="timeEntryForm">
+                                        <div class="me-2 mt-3">
+                                            <div class="mb-2">
+                                                <label for="startTime">Start time</label>
+                                                <input type="time" name="startTime" class="timeInp form-control form-control-sm">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label for="endTime">End time</label>
+                                                <input type="time" name="endTime" class="timeInp form-control form-control-sm">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label for="breakDuration">Break</label>
+                                                <input type="number" name="breakDuration" class="timeInp form-control form-control-sm" placeholder="0">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label for="notes">Total</label>
+                                                <input type="number" name="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
+                                                <button type="button" class="saveFormInps btn btn-primary btn-sm">Save</button>
+                                            </div>
+                                        </div>
+                                    </form>`;
+
+                    // remove form if it was displayed in another cell                                
+                    // $('.timeEntryForm').hide(); ////// need to figure this out...how to target form in another cell so we can replace with text summary?
+                    // Clear forms from other cells
+                    // $('.calendar td').not(this).empty().html(function(index, oldHtml) {
+                    //     return `<div class="timeEntryCont">${$(this).data('date')}</div>`; // Reset to original day number
+                    // });
+                    
+                    // Clear forms from other cells and reset to stored summary or day number
+                    $('.calendar td').each(function() {
+                        if ($(this).find('form').length > 0) {
+                            let date = $(this).data('date');
+                            let existingData = getStoredData();
+                            console.log({existingData});
+                            // let data = existingData[date] || {startTime: '', endTime: '', breakDuration: 0};
+                            // console.log({data});
+                            let daySummary = existingData[date] ? `${existingData[date].startTime} - ${existingData[date].endTime} (${existingData[date].breakDuration} min break)` : `0`;
+                            console.log({daySummary});
+                            // find the timeEntryCont div and replace form with daySummary
+                            let tsCont = $(this).find('.timeEntryCont');
+                            // tsCont.html(`<div class="timeEntryCont">${daySummary}</div>`);
+                            tsCont.html(`<div>${daySummary}</div>`);
+                        }
+                    });
+
+                    // add form to clicked cell
+                    let tsCont = td.find('.timeEntryCont');
+                    tsCont.html(form);     
+
+                    $('input[name="startTime"]').val(data.startTime);
+                    $('input[name="endTime"]').val(data.endTime);
+                    $('input[name="breakDuration"]').val(data.breakDuration);
+                }                           
+            })
+                
+            $(document).on('click', '.dismissForm', function(){
+                console.log("Close form!");
+                // $(this).closest('form').remove();  
+                
+                let td = $(this).closest('td');
+                console.log({td});
+                // let tsCont = td.find('.timeEntryCont');
+                // console.log({tsCont});
+                // grab date from cell
+                let date = td.data('date');
+                console.log({date});
+
+                let existingData = getStoredData();
+                console.log({existingData});
+                let daySummary = existingData[date] ? `${existingData[date].startTime} - ${existingData[date].endTime} (${existingData[date].breakDuration} min break)` : `0`;
+                console.log({daySummary});
+                // find the timeEntryCont div and replace form with daySummary
+                let tsCont = $(this).closest('.timeEntryCont');
+                tsCont.html(`<div>${daySummary}</div>`);
+                // tsCont.html(daySummary);
+                tsCont.html(data.startTime + ' - ' + data.endTime + ' (' + data.breakDuration + ')'); // ?????why does it only work when this reduntant line is in there???
+            })
+
+            $(document).on('click', '.saveFormInps', function(event) {
+            // $(document).on('submit', '.timeEntryForm', function(event) {
+                // // need this preventDefault to prevent form from submitting and refreshing page, i guess?
+                event.preventDefault();
+                let td = $(this).closest('td');
+                console.log({td});
+                // let tsCont = td.find('.timeEntryCont');
+                // grab date from cell
+                let date = $(this).closest('td').data('date');
+                console.log({date});
+                // define form
+                let form = $(this).closest('form');
+                console.log({form});
+                // define form data
+                let formData = {
+                    startTime: form.find('input[name="startTime"]').val(),
+                    endTime: form.find('input[name="endTime"]').val(),
+                    breakDuration: form.find('input[name="breakDuration"]').val()
+                };
+                console.log({date});
+                console.log({formData});
+                // let startTime = $(this).find('input[name="startTime"]').val();
+                // let endTime = $(this).find('input[name="endTime"]').val();
+                // let breakDuration = $(this).find('input[name="breakDuration"]').val();
+                // console.log(`Date: ${date}, Start Time: ${startTime}, End Time: ${endTime}, Break: ${breakDuration}`);
+
+                // console.log(`Date: ${date}`);
+                // console.log(`Data: ${data}`);
+                // Save the data to local storage
+                saveData(date, formData);
+                // "Hide" the form after save
+                // form.remove();
+                // tsCont.html(formData.startTime + ' - ' + formData.endTime + ' (' + formData.breakDuration + ')');
+                // Hide the form and show the ts summary
+                $(this).closest('.timeEntryCont').html(`${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break)`);
+
+
+                let daySummary = date ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break)` : `0`;
+                console.log({daySummary});
+                // find the timeEntryCont div and replace form with daySummary
+                let tsCont = $(this).closest('.timeEntryCont');
+                tsCont.html(`<div>${daySummary}</div>`);
+                // ?????this doesnt work (replacing form iwth daySummary) because the form is removed before this line is executed?????
+            });
+
+            
+      
+        /* FUNCTIONS */
+            // retrieve data from local storage
+            function getStoredData(){
+                var timesheetData = localStorage.getItem('timeEntries');
+                return timesheetData ? JSON.parse(timesheetData) : {};
+
+            }
+
+            // save data to local storage
+            function saveData(date, data){
+                var timesheetData = getStoredData();
+                timesheetData[date] = data;
+                localStorage.setItem('timeEntries', JSON.stringify(timesheetData));
+
+            }
+
+            function padToTwoDigits(number) {
+                return number.toString().padStart(2, '0');
+            }
+
+            // Function to build the calendar
+            function buildCalendar(){
+                // set values of current day/month/year
+                let today = new Date();
+                let currentMonth = today.getMonth() + 1;
+                let currentYear = today.getFullYear();
+                // console.log({today});
+                // console.log({currentMonth});
+                // console.log({currentYear});
+
+                // set calendar container
+                let calendarDiv = $(".calendarContainer");
+
+                // set up calendar title
+                let monthNames = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
+                let calendarTitle = $('<div class="calendar-title text-center"></div>').text(`${monthNames[currentMonth - 1]} ${currentYear}`);
+                calendarDiv.append(calendarTitle);
+
+                // set up calendar table
+                let daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                let firstDayInMonth = new Date(currentYear, currentMonth, 1).getDay();
+                // console.log({daysInMonth});                
+                // console.log({firstDayInMonth});
+                let tbl = $('<table class="calendar table table-striped table-bordered" id="myCalendar"></table>');
+                let tblHead = $('<thead></thead>');
+                let tblBody = $('<tbody></tbody>');
+                
+                // set up table header
+                let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',''];
+                let headerRow = $('<tr></tr>');
+                $.each(daysOfWeek, (i, v) => {
+                    let th = $('<th></th>').text(v);
+                    headerRow.append(th);
+                })
+                tblHead.append(headerRow);
+                
+                // set up table body
+                let dx = 1;
+                for (let i = 0; i < 6; i++) {
+                    // console.log("--------------------");
+                    // if(i > 0){
+                    //     console.log("i is greater than 0! " + i);
+                    //     console.log("dx is: " + dx);
+                    // }
+                    let bodyRow = $('<tr></tr>');
+                    for (let j = 0; j < 7; j++) {
+                        // console.log("j is: " + j);
+                        let formattedDate = `${currentYear}-${padToTwoDigits(currentMonth)}-${padToTwoDigits(dx)}`;
+                        let cell = $(`<td data-date="${formattedDate}"></td>`);
+                        // let cell = $(`<td data-date="${currentYear}-${currentMonth}-${dx}"></td>`);
+                        if (i === 0 && j < firstDayInMonth) {
+                            cell.text('');
+                        } else if (dx < daysInMonth) {
+                            cell.dayDate = dx + 1;
+                            cell.html(`<div class="fw-bold">${dx}</div><div class="timeEntryCont"></div>`);
+                            let existingData = getStoredData();
+                            let data = existingData[formattedDate] || {startTime: '', endTime: '', breakDuration: 0};
+                            // console.log({data});
+                            if(data.startTime || data.endTime){
+                                // cell.append(data.startTime + ' - ' + data.endTime + ' (' + data.breakDuration + ')');
+                                let tsCont = cell.find('.timeEntryCont');
+                                tsCont.html(`${data.startTime} - ${data.endTime} (${data.breakDuration} min break)`);
+                            }
+                            // cell.append(data.startTime + ' - ' + data.endTime + ' (' + data.breakDuration + ')');
+                            dx++;
+                        }
+                        bodyRow.append(cell);
+                        if(j === 6){
+                            // console.log("Saturday or last day of month!");
+                            bodyRow.append(`<td class="">Total: 0</td>`);
+                        }
+                    }
+                    tblBody.append(bodyRow);
+                }
+                tbl.append(tblHead);
+                tbl.append(tblBody);
+                calendarDiv.append(tbl);
+            }
+
+        
+    </script>
+
+
+</body>
+</html>
+

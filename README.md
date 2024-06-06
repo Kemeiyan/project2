@@ -1,2 +1,2 @@
 # project2
-developer portfolio project #2
+second project for developer portfolio
