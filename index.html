@@ -31,36 +31,56 @@
 
     <div class="container">
     <h1>Project 2 Live Demo</h1>
-    
+    <button type="button" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button>
+    <div class="pp-form-container card-mp hidden">   
+        <div class="card-title fw-bold mb-3">Pay Period</div>      
+        <form id="payPeriodForm">
+            <div class="mb-2">
+                <label for="ppStartDate">Start Date</label>
+                <input type="date" name="ppStartDate" class="form-control" id="ppStartDate">
+            </div>
+            <div class="mb-2">
+                <label for="ppEndDate">End Date</label>
+                <input type="date" name="ppEndDate" class="form-control" id="ppEndDate">
+            </div>
+            <div>
+                <button type="button" class="ppDismiss btn btn-outline-secondary btn-sm">Close</button>
+                <button type="button" class="ppSave btn btn-primary btn-sm">Save</button>
+            </div>
+        </form>
+    </div>
+
     <div class=" calendarContainer card-mp">
     <!-- calendar goes here -->
     </div>
-<!-- 
-    <div class="form-container hidden">
+
+    <div class="te-form-container card-mp hidden">
+        <div class="card-title fw-bold">Time Entry</div>
         <form id="timeEntryForm">
             <div class="me-2 mt-3">
                 <div class="mb-2">
                     <label for="startTime">Start time</label>
-                    <input type="time" id="startTime" class="form-control form-control-sm">
+                    <input type="time" name="startTime" class="timeInp form-control form-control-sm">
                 </div>
                 <div class="mb-2">
                     <label for="endTime">End time</label>
-                    <input type="time" id="endTime" class="form-control form-control-sm">
+                    <input type="time" name="endTime" class="timeInp form-control form-control-sm">
                 </div>
                 <div class="mb-2">
                     <label for="breakDuration">Break</label>
-                    <input type="number" id="breakDuration" class="form-control form-control-sm" placeholder="0">
+                    <input type="number" name="breakDuration" class="timeInp form-control form-control-sm" placeholder="0">
                 </div>
                 <div class="mb-2">
                     <label for="notes">Total</label>
-                    <input type="number" id="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
+                    <input type="number" name="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
                 </div>
                 <div>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
+                    <button type="button" class="saveFormInps btn btn-primary btn-sm" data-date="">Save</button>
                 </div>
             </div>
-        </form>
-    </div> -->
+        <form>
+    </div>
 
 </div>
 
@@ -78,21 +98,63 @@
                 buildCalendar();
             })
 
+            $(document).on('click', '.addPayPeriod', function(){
+                console.log("Add pay period button clicked!");
+                // show the pay period form
+                $('.pp-form-container').addClass('unhidden').removeClass('hidden');
+                
+                // // get start and end dates for pay period
+                // let startDate = prompt("Enter the start date for the pay period (YYYY-MM-DD)");
+                // let endDate = prompt("Enter the end date for the pay period (YYYY-MM-DD)");
+                // console.log({startDate});
+                // console.log({endDate});
+
+
+                // calculate the total hours worked during the pay period
+                // loop through the dates in the range and sum the day totals
+                // style the dates within the pay period
+                // populate the pay period total cell with the total hours worked during the pay period
+                // to change the pay period click on the pay period total cell and modify the start and end dates
+            })
+
+
+            $(document).on('click', '.ppSave', function(){
+                console.log("save pay period button clicked!");
+                // get start and end dates for pay period from form and save to local storage
+                let startDate = $('#ppStartDate').val();
+                let endDate = $('#ppEndDate').val();
+                console.log({startDate});
+                console.log({endDate});               
+
+                savePayPeriodData(startDate, endDate);
+               
+
+                // hide the pay period form
+                // $('.pp-form-container').addClass('hidden').removeClass('unhidden');
+            })
+
+            $(document).on('click', '.ppDismiss', function(){
+                console.log("close pay period form button clicked!");
+                // close the pay period form
+                $('.pp-form-container').addClass('hidden').removeClass('unhidden');
+            })
+
             $(document).on('change', '.timeInp', function(){
                 // start time, end time, or break duration was modified...update total hours for day
                 console.log("Time changed!");
                 // retrieve values from form
-                let start = $(this).closest('td').find('input[name="startTime"]').val();
-                let end = $(this).closest('td').find('input[name="endTime"]').val();
-                let breakTime = $(this).closest('td').find('input[name="breakDuration"]').val();
+                let start = $(this).closest('form').find('input[name="startTime"]').val();
+                let end = $(this).closest('form').find('input[name="endTime"]').val();
+                let breakTime = $(this).closest('form').find('input[name="breakDuration"]').val();
                 // console.log({start});
                 // console.log({end});
                 // console.log({breakTime});
-                // retrieve date from cell
-                let focusDate = $(this).closest('td').data('date');
-                // console.log({focusDate});
+                // retrieve date from save btn
+                let focusDate = $(this).closest('form').find('.saveFormInps').data('date');
+                // let focusDate = $(this).closest('td').data('date');
+                console.log({focusDate});'s'
                 // retrieve total input field
-                let total = $(this).closest('td').find('input[name="dayTotal"]');
+                let total = $(this).closest('form').find('input[name="dayTotal"]');
                 // console.log({total});
                 // convert start/end times to datetime objects
                 let startDateTime = new Date(`${focusDate}T${start}:00`);
@@ -115,114 +177,49 @@
             })
 
             $(document).on('click', 'td', function(){
-                // console.log("Clicked on a day!");       
-                if($(this).find('form').length > 0){
-                    // don't do anything if form is already displayed
-                    return;
-                }else{
-                    // get date from clicked cell
-                    let td = $(this);
-                    let date = td.data('date');
-
-                    // get any existing data from local storage
-                    let timesheetData = getStoredData();
-                    let data = timesheetData[date] || {startTime: '', endTime: '', breakDuration: 0};
-
-                    // // $('.form-container').addClass('hidden').removeClass('unhidden');
-                    // $('.form-container').addClass('unhidden').removeClass('hidden');
-
-                    // form for time entry
-                    let form = `<form class="timeEntryForm">
-                                        <div class="me-2 mt-3">
-                                            <div class="mb-2">
-                                                <label for="startTime">Start time</label>
-                                                <input type="time" name="startTime" class="timeInp form-control form-control-sm">
-                                            </div>
-                                            <div class="mb-2">
-                                                <label for="endTime">End time</label>
-                                                <input type="time" name="endTime" class="timeInp form-control form-control-sm">
-                                            </div>
-                                            <div class="mb-2">
-                                                <label for="breakDuration">Break</label>
-                                                <input type="number" name="breakDuration" class="timeInp form-control form-control-sm" placeholder="0">
-                                            </div>
-                                            <div class="mb-2">
-                                                <label for="notes">Total</label>
-                                                <input type="number" name="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
-                                            </div>
-                                            <div>
-                                                <button type="button" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
-                                                <button type="button" class="saveFormInps btn btn-primary btn-sm">Save</button>
-                                            </div>
-                                        </div>
-                                    </form>`;
-
-                    // remove form if it was displayed in another cell                                
-                    // $('.timeEntryForm').hide(); ////// need to figure this out...how to target form in another cell so we can replace with text summary?
-                    // Clear forms from other cells
-                    // $('.calendar td').not(this).empty().html(function(index, oldHtml) {
-                    //     return `<div class="timeEntryCont">${$(this).data('date')}</div>`; // Reset to original day number
-                    // });
-                    
-                    // Clear forms from other cells and reset to stored summary or day number
-                    $('.calendar td').each(function() {
-                        if ($(this).find('form').length > 0) {
-                            let date = $(this).data('date');
-                            let existingData = getStoredData();
-                            console.log({existingData});
-                            // let data = existingData[date] || {startTime: '', endTime: '', breakDuration: 0};
-                            // console.log({data});
-                            let daySummary = existingData[date] ? `${existingData[date].startTime} - ${existingData[date].endTime} (${existingData[date].breakDuration} min break)` : `0`;
-                            console.log({daySummary});
-                            // find the timeEntryCont div and replace form with daySummary
-                            let tsCont = $(this).find('.timeEntryCont');
-                            // tsCont.html(`<div class="timeEntryCont">${daySummary}</div>`);
-                            tsCont.html(`<div>${daySummary}</div>`);
-                        }
-                    });
-
-                    // add form to clicked cell
-                    let tsCont = td.find('.timeEntryCont');
-                    tsCont.html(form);     
-
-                    $('input[name="startTime"]').val(data.startTime);
-                    $('input[name="endTime"]').val(data.endTime);
-                    $('input[name="breakDuration"]').val(data.breakDuration);
-                }                           
+                console.log("Clicked on a day!");       
+                // get date from clicked cell
+                let date = $(this).data('date');
+                console.log({date});
+                // store date in save button (or maybe somewhere better?)
+                $('.saveFormInps').data('date', date);
+                // get any existing data from local storage
+                let timesheetData = getStoredDayData();
+                let data = timesheetData[date] || {startTime: '', endTime: '', breakDuration: 0};
+                // show form
+                $('.te-form-container').addClass('unhidden').removeClass('hidden');
+                
+            // put date in form title for clarity (format date)
+            // format date manually for now but think about using a library like date-fns or moment.js
+                // Split the date string to reformat to us format
+                let [year, month, day] = date.split("-");
+                // Format the date as "DD/MM/YYYY"
+                let formattedDate = `${month}/${day}/${year}`;
+                console.log({formattedDate});
+            // // //
+                $('.te-form-container .card-title').text(`Time Entry for ${formattedDate}`);
+                
+                // populate form with existing data
+                $('input[name="startTime"]').val(data.startTime);
+                $('input[name="endTime"]').val(data.endTime);
+                $('input[name="breakDuration"]').val(data.breakDuration);
+                $('input[name="dayTotal"]').val(data.dayTotal);
+                                        
             })
                 
             $(document).on('click', '.dismissForm', function(){
                 console.log("Close form!");
-                // $(this).closest('form').remove();  
-                
-                let td = $(this).closest('td');
-                console.log({td});
-                // let tsCont = td.find('.timeEntryCont');
-                // console.log({tsCont});
-                // grab date from cell
-                let date = td.data('date');
-                console.log({date});
-
-                let existingData = getStoredData();
-                console.log({existingData});
-                let daySummary = existingData[date] ? `${existingData[date].startTime} - ${existingData[date].endTime} (${existingData[date].breakDuration} min break)` : `0`;
-                console.log({daySummary});
-                // find the timeEntryCont div and replace form with daySummary
-                let tsCont = $(this).closest('.timeEntryCont');
-                tsCont.html(`<div>${daySummary}</div>`);
-                // tsCont.html(daySummary);
-                tsCont.html(data.startTime + ' - ' + data.endTime + ' (' + data.breakDuration + ')'); // ?????why does it only work when this reduntant line is in there???
+                // remove date from save button
+                $('saveFormInps').data('date', '');
+                // hide form
+                $('.te-form-container').addClass('hidden').removeClass('unhidden');
             })
 
             $(document).on('click', '.saveFormInps', function(event) {
-            // $(document).on('submit', '.timeEntryForm', function(event) {
-                // // need this preventDefault to prevent form from submitting and refreshing page, i guess?
-                event.preventDefault();
-                let td = $(this).closest('td');
-                console.log({td});
-                // let tsCont = td.find('.timeEntryCont');
-                // grab date from cell
-                let date = $(this).closest('td').data('date');
+                console.log("Save button was clicked!");
+              // grab data and save to local storage  
+                // grab date from where it is stored after the td was clicked (stored on btn data attribute for now)
+                let date = $(this).data('date');
                 console.log({date});
                 // define form
                 let form = $(this).closest('form');
@@ -231,55 +228,222 @@
                 let formData = {
                     startTime: form.find('input[name="startTime"]').val(),
                     endTime: form.find('input[name="endTime"]').val(),
-                    breakDuration: form.find('input[name="breakDuration"]').val()
+                    breakDuration: form.find('input[name="breakDuration"]').val(),
+                    dayTotal: form.find('input[name="dayTotal"]').val(),
+                    weekNumber: getCalendarWeekNumber(new Date(date))               
                 };
                 console.log({date});
                 console.log({formData});
-                // let startTime = $(this).find('input[name="startTime"]').val();
-                // let endTime = $(this).find('input[name="endTime"]').val();
-                // let breakDuration = $(this).find('input[name="breakDuration"]').val();
-                // console.log(`Date: ${date}, Start Time: ${startTime}, End Time: ${endTime}, Break: ${breakDuration}`);
-
-                // console.log(`Date: ${date}`);
-                // console.log(`Data: ${data}`);
                 // Save the data to local storage
-                saveData(date, formData);
-                // "Hide" the form after save
-                // form.remove();
-                // tsCont.html(formData.startTime + ' - ' + formData.endTime + ' (' + formData.breakDuration + ')');
-                // Hide the form and show the ts summary
-                $(this).closest('.timeEntryCont').html(`${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break)`);
-
-
-                let daySummary = date ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break)` : `0`;
+                saveDayData(date, formData);
+            // Hide the form and update the ts summary
+                // hide form
+                $('.te-form-container').addClass('hidden').removeClass('unhidden');
+                // find timeEntryCont div by date on td
+                let tsCont = $(`td[data-date="${date}"] .timeEntryCont`);
+                // define daySummary
+                let daySummary = date 
+                                    ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break) Total: ${formData.dayTotal}` 
+                                    : `0`;
                 console.log({daySummary});
-                // find the timeEntryCont div and replace form with daySummary
-                let tsCont = $(this).closest('.timeEntryCont');
+                    // ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break) Total: ${formData.dayTotal}, wkno: ${formData.weekNumber}` 
+                // update td with new daySummary
                 tsCont.html(`<div>${daySummary}</div>`);
-                // ?????this doesnt work (replacing form iwth daySummary) because the form is removed before this line is executed?????
             });
 
             
       
         /* FUNCTIONS */
+
+            // usimg a while loop to loop through a date range
+            // /*
+
+// ****TO DO for pay period functionality:****
+
+//             -have inputs for entering start and end dates for a new pay period
+//             -have a button to submit the start and end dates
+//             -have a function that calculates the pay period total based on the start and end dates (loop through dates in range and sum the day totals)
+//             -have a function that styles the dates within the pay period (maybe add a class to the td elements)
+//             -populate the pay period total cell with the total hours worked during the pay period
+//             -to change the pay period click on the pay period total cell and modify the start and end dates
+
+            // function to loop through a date range so that we can calculate the pay period total for the date range and also style the dates within the pay period
+            function savePayPeriodData(startString, endString){
+
+                // calculate the total hours worked during the pay period
+                // loop through the dates in the range and sum the day totals
+                // style the dates within the pay period
+                // populate the pay period total cell with the total hours worked during the pay period
+                // * To change the pay period click on the pay period total cell and modify the start and end dates
+
+
+                let timesheetData = getStoredDayData();
+                const start = new Date(startString);
+                const end = new Date(endString);
+                let loopDate = new Date(start);
+                let ppTotal = 0;
+
+                while(loopDate <= end){
+                    console.log({loopDate});
+                    // get total hours worked for the day (extrat from data object)
+                    let loopDateString = loopDate.toISOString().split('T')[0];
+                    let dayData = timesheetData[loopDateString];
+                    console.log({dayData});
+                    // add dayTotal to total for pay period
+                    if(dayData && dayData.dayTotal){
+                        ppTotal = ppTotal + parseFloat(dayData.dayTotal);
+                        console.log({ppTotal});
+                    }
+
+                    // and maybe update the day data object with pay period info...
+                    // ...like if day has been included in a pay period, what the start/end dates are...etc.
+                    if(loopDateString == startString){
+                        var ppPosition = 'start';
+                    } else if(loopDateString == endString){
+                        var ppPosition = 'end';
+                    } else {
+                        var ppPosition = 'middle';
+                    }
+                    saveDayData(loopDateString, {...dayData, payPeriod: ppPosition, payPeriodStart: startString, payPeriodEnd: endString});
+        // and maybe add a class to the td elements????
+
+                    // increment the date
+                    let newDate = loopDate.setDate(loopDate.getDate() + 1);
+                    loopDate = new Date(newDate);         
+                }
+
+                // save ppTotal to local storage
+                var payPeriodData = getStoredPayPeriodData();
+                payPeriodData[endString] = {
+                    startDate: startString,
+                    endDate: endString,
+                    total: ppTotal
+                }
+                localStorage.setItem('payPeriods', JSON.stringify(payPeriodData));
+
+                // style the dates within the pay period...or maybe reload the calendar??? since we're going to be styling stuff when we build the calendar anyway
+
+            }
+            // */
+            function getFormattedDateString(dateObj) {
+                // const date = new Date();
+
+                let day = String(dateObj.getDate()).padStart(2, '0');
+                let month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                let year = dateObj.getFullYear();
+
+                let formattedDate = `${year}-${month}-${day}`;
+                console.log(formattedDate); // Example output: "2024-05-30"
+                return formattedDate;
+            }
+
+            function getCalendarWeekNumber(date) {
+                // Get the first day of the year
+                const startOfYear = new Date(date.getFullYear(), 0, 1);
+                
+                // Find the first Sunday of the year
+                const firstSunday = new Date(startOfYear);
+                firstSunday.setDate(firstSunday.getDate() + (7 - firstSunday.getDay()) % 7);
+                
+                // Calculate the number of days between the date and the first Sunday of the year
+                const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+                
+                // Calculate the week number
+                return Math.floor(daysBetween / 7) + 1;
+            }
+
+            function getCalendarWeekNumber_v3(date) {
+                console.log({date});
+                let startOfYear = new Date(date.getFullYear(), 0, 1);
+                console.log({startOfYear});
+                // Adjust startOfYear to the first Sunday of the year
+                let firstSunday = new Date(startOfYear.setDate(startOfYear.getDate() - startOfYear.getDay() + 7));
+                console.log({firstSunday});
+                // Calculate the number of days between the date and the first Sunday of the year
+                let daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+                console.log({daysBetween});
+                // Calculate the week number
+                return Math.floor(daysBetween / 7) + 1;
+            }
+
+            // function getCalendarWeekNumber_v2(date) {
+            //     const startOfYear = new Date(date.getFullYear(), 0, 1);
+            //     // Adjust startOfYear to the first Sunday of the year
+            //     const dayOfWeek = startOfYear.getDay(); // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+            //     const firstSunday = dayOfWeek === 0 ? startOfYear : new Date(startOfYear.setDate(startOfYear.getDate() + (7 - dayOfWeek)));
+
+            //     // Calculate the number of days between the date and the first Sunday of the year
+            //     const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+
+            //     // Calculate the week number
+            //     return Math.floor(daysBetween / 7) + 1;
+            // }
+
+            // function getCalendarWeekNumber_v1(date) {
+            //     const startOfYear = new Date(date.getFullYear(), 0, 1);
+            //     console.log({startOfYear});
+            //     const firstSunday = new Date(startOfYear.setDate(startOfYear.getDate() + (7 - startOfYear.getDay()) % 7));
+            //     console.log({firstSunday});
+            //     const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+            //     console.log({daysBetween});
+            //     let weekNumber = Math.floor(daysBetween / 7) + 1;
+            //     console.log({weekNumber});
+            //     return Math.floor(daysBetween / 7) + 1;
+            // }
+
+            // function getWeekNumberORIG(date) {
+            //     // Copy date so don't modify original
+            //     date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            //     // Set to nearest Thursday: current date + 4 - current day number
+            //     // Make Sunday's day number 7
+            //     date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
+            //     // Get first day of year
+            //     var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+            //     // Calculate full weeks to nearest Thursday
+            //     var weekNo = Math.ceil(( ( (date - yearStart) / 86400000) + 1)/7);
+            //     // Return array of year and week number
+            //     return [date.getUTCFullYear(), weekNo];
+            // }
+
+            // function getWeekNumber(date){
+            //     // copy date to new date object
+            //     let d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            //     // set day number (0=Sunday, 1=Monday, etc.)
+            //     let dayNum = (d.getDay() + 1) % 7;
+            //     console.log({dayNum});
+            //     // adjust date to nearest Sunday
+            //     d.setDate(d.getDate() - dayNum);
+            //     // calculate week number
+            //     let yearStart = new Date(Date.UTC(d.getFullYear(), 0, 1));
+            //     let weekNumber = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+            //     return weekNumber;
+            // }'
+
+
+            // Function to pad a number to two digits
+            function padToTwoDigits(number) {
+                    return number.toString().padStart(2, '0');
+                }
+
             // retrieve data from local storage
-            function getStoredData(){
+            function getStoredDayData(){
                 var timesheetData = localStorage.getItem('timeEntries');
                 return timesheetData ? JSON.parse(timesheetData) : {};
+            }
 
+
+            function getStoredPayPeriodData(){
+                var payPeriodData = localStorage.getItem('payPeriods');
+                return payPeriodData ? JSON.parse(payPeriodData) : {};
             }
 
             // save data to local storage
-            function saveData(date, data){
-                var timesheetData = getStoredData();
+            function saveDayData(date, data){
+                var timesheetData = getStoredDayData();
                 timesheetData[date] = data;
                 localStorage.setItem('timeEntries', JSON.stringify(timesheetData));
-
             }
 
-            function padToTwoDigits(number) {
-                return number.toString().padStart(2, '0');
-            }
 
             // Function to build the calendar
             function buildCalendar(){
@@ -304,12 +468,12 @@
                 let firstDayInMonth = new Date(currentYear, currentMonth, 1).getDay();
                 // console.log({daysInMonth});                
                 // console.log({firstDayInMonth});
-                let tbl = $('<table class="calendar table table-striped table-bordered" id="myCalendar"></table>');
+                let tbl = $('<table class="calendar table table-bordered" id="myCalendar"></table>');
                 let tblHead = $('<thead></thead>');
                 let tblBody = $('<tbody></tbody>');
                 
                 // set up table header
-                let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',''];
+                let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat','Weekly Total','Pay Period Total'];
                 let headerRow = $('<tr></tr>');
                 $.each(daysOfWeek, (i, v) => {
                     let th = $('<th></th>').text(v);
@@ -317,40 +481,67 @@
                 })
                 tblHead.append(headerRow);
                 
+                // get stored pay period data so we can populate the calendar with pay period totals and style the pay period dates
+                let ppData = getStoredPayPeriodData();
                 // set up table body
                 let dx = 1;
                 for (let i = 0; i < 6; i++) {
                     // console.log("--------------------");
-                    // if(i > 0){
-                    //     console.log("i is greater than 0! " + i);
-                    //     console.log("dx is: " + dx);
-                    // }
                     let bodyRow = $('<tr></tr>');
+                    let payPeriodTotal = false;
                     for (let j = 0; j < 7; j++) {
                         // console.log("j is: " + j);
-                        let formattedDate = `${currentYear}-${padToTwoDigits(currentMonth)}-${padToTwoDigits(dx)}`;
-                        let cell = $(`<td data-date="${formattedDate}"></td>`);
-                        // let cell = $(`<td data-date="${currentYear}-${currentMonth}-${dx}"></td>`);
+                        let dateString = `${currentYear}-${padToTwoDigits(currentMonth)}-${padToTwoDigits(dx)}`;
+                        console.log({dateString});
+                        let weekNum = getCalendarWeekNumber(new Date(dateString));
+                        let cell = $(`<td class="cal-day" data-date="${dateString}"></td>`);
                         if (i === 0 && j < firstDayInMonth) {
                             cell.text('');
                         } else if (dx < daysInMonth) {
                             cell.dayDate = dx + 1;
-                            cell.html(`<div class="fw-bold">${dx}</div><div class="timeEntryCont"></div>`);
-                            let existingData = getStoredData();
-                            let data = existingData[formattedDate] || {startTime: '', endTime: '', breakDuration: 0};
+                            cell.html(`<div class="fw-bold">${dx}</div>
+                                        <div class="timeEntryCont"></div>`);
+                            let existingData = getStoredDayData();
+                            let data = existingData[dateString] ? existingData[dateString] : {startTime: '', endTime: '', breakDuration: 0};
                             // console.log({data});
-                            if(data.startTime || data.endTime){
-                                // cell.append(data.startTime + ' - ' + data.endTime + ' (' + data.breakDuration + ')');
+                            if(data.dayTotal){
                                 let tsCont = cell.find('.timeEntryCont');
-                                tsCont.html(`${data.startTime} - ${data.endTime} (${data.breakDuration} min break)`);
+                                // tsCont.html(`${data.startTime} - ${data.endTime} (${data.breakDuration} min break) Total: ${data.dayTotal} hrs`);
+                                tsCont.html(`${data.dayTotal} hrs`);
                             }
-                            // cell.append(data.startTime + ' - ' + data.endTime + ' (' + data.breakDuration + ')');
+
+                            // style the cell if it is part of a pay period
+                            if(data.payPeriod){
+                                cell.addClass('pp-day');
+                                if(data.payPeriod == 'start'){
+                                    cell.addClass('pp-start');
+                                    bodyRow.append(`<td class="test-pp-start"></td>`);
+                                } else if(data.payPeriod == 'end'){
+                                    cell.addClass('pp-end');
+                                } else {
+                                    cell.addClass('pp-middle');
+                                }
+                            }
+                            // add pay period total to pay period total cell for this row if this day is the end of a pay period
+                            if(ppData[dateString]){
+                                // cell.addClass('pp-day');
+                                // cell.append(`<div class="pp-total">${ppData[dateString].total}</div>`);
+                                payPeriodTotal = ppData[dateString].total;
+                            }
                             dx++;
                         }
                         bodyRow.append(cell);
                         if(j === 6){
                             // console.log("Saturday or last day of month!");
-                            bodyRow.append(`<td class="">Total: 0</td>`);
+                            if(payPeriodTotal){
+                                bodyRow.append(`<td class="week-total"></td>
+                                                <td class="pp-total">${payPeriodTotal} hrs</td>`);
+                            } else {
+                                bodyRow.append(`<td class="week-total"></td>
+                                                <td class="pp-total"></td>`);
+                            }
+                            // bodyRow.append(`<td class="week-total"></td>
+                            //                 <td class="pp-total></td>`);
                         }
                     }
                     tblBody.append(bodyRow);

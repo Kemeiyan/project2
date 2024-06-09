@@ -11100,7 +11100,9 @@ html {
 .copyright {
   background-color: #1a252f;
 }
-/* Additions */
+
+/* ***************************** */
+/* ADDITIONS */
 .skills-list {
   display: flex;
   flex-flow: row wrap;
@@ -11126,8 +11128,107 @@ a.disabled {
   pointer-events: none;
 }
 
+/* calendar stuff */
 table.calendar > td {
-  border: 1px solid black;
+  /* border: 1px solid black; */
+  /* width: 50px;
+  height: 50px; */
+
+  padding: 10px;
+  
+  position: relative; 
+  /* Ensure the pseudo-element is positioned relative to the td */
+  
+  overflow: hidden; 
+  /* Ensure the pseudo-element doesn't overflow the td */
+}
+
+.partial-bg::before {
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 0;
+  right: 0;
+  /* background-color: #f0f0f0; */
+  z-index: -1; /* Ensure the background stays behind the content */
+  /* border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px; */
+}
+
+
+
+.test-pp-middle::before{
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 0;
+  right: 0;
+  background-color: #D9CEDE!important;
+  z-index: -1; /* Ensure the background stays behind the content */
+}
+
+.test-pp-start::before{
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 10%;
+  right: 0;
+  background-color: #D9CEDE!important;
+  z-index: -1; /* Ensure the background stays behind the content */
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+.test-pp-end::before{
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 0;
+  right: 10%;
+  background-color: #A085AD;
+  z-index: -1; /* Ensure the background stays behind the content */
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+
+td.pp-middle{
+  background-color: #D9CEDE!important;
+}
+td.pp-start{
+  background-color: #D9CEDE!important;
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+td.pp-end{
+  background-color: #A085AD!important;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+
+
+.cal-day {
+  width: 100px;
+  height: 100px;
+}
+
+.cal-day:hover {
+  background-color: var(--bs-light);
+}
+
+
+.wk-total {
+  width: 50px;
+}
+
+.pp-total {
+  background-color: var(--bs-white)!important; 
+  border-color: var(--bs-table-border-color)!important;
 }
 
 .calendar-title {
@@ -11141,9 +11242,6 @@ table.calendar > td {
   opacity: 0.6;
 }
 
-
-
-
 .card-mp {
   background-color: #ffffff;
   padding: 16px;
@@ -11152,8 +11250,6 @@ table.calendar > td {
   margin: 10px;
   box-shadow: 0.25rem 0.25rem 1.5rem rgba(0, 0, 0, 0.12)!important;
 }
-
-
 
 
 /* might not need... */
@@ -11167,3 +11263,4 @@ table.calendar > td {
 
 .hidden { opacity: 0; transition: opacity 0.5s; }
 .unhidden { opacity: 1; transition: opacity 0.5s; }
+/*     */
