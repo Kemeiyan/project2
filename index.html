@@ -111,50 +111,7 @@
 
     <script>
        
-function setUpDemoData(){
-    // define the demo data object
-    let timeEntriesDemoData = {
-            "2024-06-03": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "30",
-                "dayTotal": "7.50",
-                "weekNumber": 22
-            },
-            "2024-06-04": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                "weekNumber": 22
-            },
-            "2024-06-05": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                "weekNumber": 22
-            },
-            "2024-06-06": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                "weekNumber": 22
-            },
-            "2024-06-07": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "30",
-                "dayTotal": "7.50",
-                "weekNumber": 21
-            },
-    };
-    // store the demo data object in local storage
-    localStorage.setItem('timeEntries', JSON.stringify(timeEntriesDemoData));
-    // reload page
-    location.reload();
-}
+
 
 
 
@@ -384,11 +341,6 @@ function setUpDemoData(){
                 //       return tr;
                 //     }
 
-
-
-            // usimg a while loop to loop through a date range
-            // /*
-
 // ****TO DO for pay period functionality:****
 
 //             -have inputs for entering start and end dates for a new pay period
@@ -406,7 +358,37 @@ function setUpDemoData(){
                 // style the dates within the pay period
                 // populate the pay period total cell with the total hours worked during the pay period
                 // * To change the pay period click on the pay period total cell and modify the start and end dates
+               
+                
+            // maybe make this pay period validationk a separate function
+                // get pay period data from local storage
+                let payPeriodData = getStoredPayPeriodData();
 
+                // check to make sure start date is before end date and neither date overlaps with an existing pay period
+                if(startString >= endString){
+                    alert("Start date must be before end date!");
+                    return;
+                }
+
+                for (const [ppID, ppData] of Object.entries(payPeriodData)) {
+                    // console.log("--------------------");
+                    // console.log({ppID});
+                    // console.log({ppData});
+                    if(startString >= ppData.startDate && startString <= ppData.endDate){
+                        // alert("Start date overlaps with existing pay period!");
+                        // return;
+                        // replace alert with a form validation message
+                        invalidInput($('#ppStartDate'), true, 'Start date overlaps with existing pay period!');  
+                        return; 
+                    }
+                    if(endString >= ppData.startDate && endString <= ppData.endDate){
+                        // alert("End date overlaps with existing pay period!");
+                        // return;
+                        // replace alert with a form validation message
+                        invalidInput($('#ppEndDate'), true, 'End date overlaps with existing pay period!');
+                        return;            
+                    }
+                }
 
                 let timesheetData = getStoredDayData();
                 const start = new Date(startString);
@@ -471,8 +453,6 @@ function setUpDemoData(){
                     loopDate.setDate(loopDate.getDate() + 1);         
                 } // END loop
 
-                // get pay period data from local storage
-                let payPeriodData = getStoredPayPeriodData();
                 // save pay period data (saving the total hours worked during the pay period)
                 payPeriodData[ppID] = {
                     startDate: startString,
@@ -507,7 +487,22 @@ function setUpDemoData(){
 
                 // style the dates within the pay period...or maybe reload the calendar??? since we're going to be styling stuff when we build the calendar anyway
                 location.reload();
+            }
 
+            // function to add/remove invalid feedback styling
+            function invalidInput(element, invalid=true, invalidFeedback=false){
+                let parent = element.parent();
+                let feedback = parent.find('.invalid-feedback');
+                feedback.remove();
+
+                if(invalid){
+                    element.addClass('is-invalid');
+                    if(invalidFeedback){
+                        parent.append(`<div class="invalid-feedback">${invalidFeedback}</div>`);
+                    }
+                } else {
+                    element.removeClass('is-invalid');
+                }
             }
 
 
@@ -709,6 +704,86 @@ function setUpDemoData(){
                 tbl.append(tblHead);
                 tbl.append(tblBody);
                 calendarDiv.append(tbl);
+            }
+
+            function setUpDemoData(){
+                // define the demo data object
+                let timeEntriesDemoData = {
+                        "2024-06-03": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "weekNumber": 22
+                        },
+                        "2024-06-04": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 22
+                        },
+                        "2024-06-05": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 22
+                        },
+                        "2024-06-06": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 22
+                        },
+                        "2024-06-07": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "weekNumber": 21
+                        },
+                        "2024-06-10": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 21
+                        },
+                        "2024-06-11": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 21
+                        },
+                        "2024-06-12": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 21
+                        },
+                        "2024-06-13": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "weekNumber": 21
+                        },
+                        "2024-06-14": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "weekNumber": 21
+                        },
+                };
+                // store the demo data object in local storage
+                localStorage.setItem('timeEntries', JSON.stringify(timeEntriesDemoData));
+                // reload page
+                location.reload();
             }
 
     </script>
