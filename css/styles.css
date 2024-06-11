@@ -358,7 +358,7 @@ td,
 th {
   border-color: inherit;
   border-style: solid;
-  border-width: 0;
+  border-wid'sth: 0;
 }
 
 label {
@@ -11143,74 +11143,28 @@ table.calendar > td {
   /* Ensure the pseudo-element doesn't overflow the td */
 }
 
-.partial-bg::before {
-  content: "";
-  position: absolute;
-  top: 20%; /* Adjust this value to change the gap at the top */
-  bottom: 20%; /* Adjust this value to change the gap at the bottom */
-  left: 0;
-  right: 0;
-  /* background-color: #f0f0f0; */
-  z-index: -1; /* Ensure the background stays behind the content */
-  /* border-top-right-radius: 15px;
-  border-bottom-right-radius: 15px; */
+/* .table-cell-hover > tbody > tr > td:hover > * { */
+  /* --bs-table-accent-bg: var(--bs-table-hover-bg); */
+  /* color: var(--bs-table-hover-color); */
+  /* color: #563856;
+} */
+.table-cell-focus > tbody > tr > td.selected {
+  background-color: #F4DA66!important;
 }
-
-
-
-.test-pp-middle::before{
-  content: "";
-  position: absolute;
-  top: 20%; /* Adjust this value to change the gap at the top */
-  bottom: 20%; /* Adjust this value to change the gap at the bottom */
-  left: 0;
-  right: 0;
-  background-color: #D9CEDE!important;
-  z-index: -1; /* Ensure the background stays behind the content */
-}
-
-.test-pp-start::before{
-  content: "";
-  position: absolute;
-  top: 20%; /* Adjust this value to change the gap at the top */
-  bottom: 20%; /* Adjust this value to change the gap at the bottom */
-  left: 10%;
-  right: 0;
-  background-color: #D9CEDE!important;
-  z-index: -1; /* Ensure the background stays behind the content */
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
-}
-
-.test-pp-end::before{
-  content: "";
-  position: absolute;
-  top: 20%; /* Adjust this value to change the gap at the top */
-  bottom: 20%; /* Adjust this value to change the gap at the bottom */
-  left: 0;
-  right: 10%;
-  background-color: #A085AD;
-  z-index: -1; /* Ensure the background stays behind the content */
-  border-top-right-radius: 15px;
-  border-bottom-right-radius: 15px;
-}
-
 
 td.pp-middle{
   background-color: #D9CEDE!important;
 }
 td.pp-start{
-  background-color: #D9CEDE!important;
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
+  background-color: #A085AD!important;
+  border-top-left-radius: 2rem;
+  border-bottom-left-radius: 2rem;
 }
 td.pp-end{
   background-color: #A085AD!important;
-  border-top-right-radius: 15px;
-  border-bottom-right-radius: 15px;
+  border-top-right-radius: 2rem;
+  border-bottom-right-radius: 2rem;
 }
-
-
 
 .cal-day {
   width: 100px;
@@ -11219,8 +11173,8 @@ td.pp-end{
 
 .cal-day:hover {
   background-color: var(--bs-light);
+  color: #563856;
 }
-
 
 .wk-total {
   width: 50px;
@@ -11236,6 +11190,56 @@ td.pp-end{
   font-weight: 700;
   color: var(--bs-dark);
 }
+
+
+/* START experiment to make space between background colors of adjacent cells in table */
+.partial-bg::before {
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 0;
+  right: 0;
+  /* background-color: #f0f0f0; */
+  z-index: -1; /* Ensure the background stays behind the content */
+  /* border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px; */
+}
+.test-pp-middle::before{
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 0;
+  right: 0;
+  background-color: #D9CEDE!important;
+  z-index: -1; /* Ensure the background stays behind the content */
+}
+.test-pp-start::before{
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 10%;
+  right: 0;
+  background-color: #D9CEDE!important;
+  z-index: -1; /* Ensure the background stays behind the content */
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+.test-pp-end::before{
+  content: "";
+  position: absolute;
+  top: 20%; /* Adjust this value to change the gap at the top */
+  bottom: 20%; /* Adjust this value to change the gap at the bottom */
+  left: 0;
+  right: 10%;
+  background-color: #A085AD;
+  z-index: -1; /* Ensure the background stays behind the content */
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+/* END experiment */
 
 .form-control:disabled, .form-control[readonly] {
   background-color: var(--bs-light);

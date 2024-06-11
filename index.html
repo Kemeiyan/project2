@@ -30,8 +30,18 @@
 <body>
 
     <div class="container">
-    <h1>Project 2 Live Demo</h1>
-    <button type="button" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button>
+    <h1>Time and Pay Tracker</h1>
+    
+    <div class="d-flex justify-content-between">
+        <div>
+            <button type="button" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button>
+        </div>
+        <div>
+            <button type="button" class="loadDemoData btn btn-outline-info"><i class="fa fa-save me-1"></i>Load demo data</button>
+            <button type="button" class="clearLocalData btn btn-outline-danger"><i class="fa fa-trash me-1"></i>Clear all data</button>
+        </div>
+    </div>
+
     <div class="pp-form-container card-mp hidden">   
         <div class="card-title fw-bold mb-3">Pay Period</div>      
         <form id="payPeriodForm">
@@ -45,7 +55,7 @@
             </div>
             <div>
                 <button type="button" class="ppDismiss btn btn-outline-secondary btn-sm">Close</button>
-                <button type="button" class="ppSave btn btn-primary btn-sm">Save</button>
+                <button type="button" class="ppSave btn btn-primary btn-sm" data-ppID="">Save</button>
             </div>
         </form>
     </div>
@@ -74,9 +84,14 @@
                     <label for="notes">Total</label>
                     <input type="number" name="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
                 </div>
-                <div>
-                    <button type="button" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
-                    <button type="button" class="saveFormInps btn btn-primary btn-sm" data-date="">Save</button>
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button type="button" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
+                        <button type="button" class="saveFormInps btn btn-primary btn-sm" data-date="">Save</button>
+                    </div>
+                    <div>
+                        <button type="button" class="deleteTimeRec btn btn-danger btn-sm"><i class="fa fa-trash me-1"></i>Delete time record</button>
+                    </div>
                 </div>
             </div>
         <form>
@@ -91,6 +106,53 @@
 
     <script>
        
+function setUpDemoData(){
+    // define the demo data object
+    let timeEntriesDemoData = {
+            "2024-06-03": {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "30",
+                "dayTotal": "7.50",
+                "weekNumber": 22
+            },
+            "2024-06-04": {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00",
+                "weekNumber": 22
+            },
+            "2024-06-05": {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00",
+                "weekNumber": 22
+            },
+            "2024-06-06": {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00",
+                "weekNumber": 22
+            },
+            "2024-06-07": {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "30",
+                "dayTotal": "7.50",
+                "weekNumber": 21
+            },
+    };
+    // store the demo data object in local storage
+    localStorage.setItem('timeEntries', JSON.stringify(timeEntriesDemoData));
+    // reload page
+    location.reload();
+}
+
+
+
 
         /* EVENTS */
             $(()=>{
@@ -98,37 +160,45 @@
                 buildCalendar();
             })
 
+
+            $(document).on('click', '.loadDemoData', function(){
+                console.log("Load demo data button clicked!");
+                setUpDemoData();
+
+                let teData = getStoredDayData();
+                console.log({teData});
+            })
+
+            $(document).on('click', '.clearLocalData', function(){
+                console.log("Clear data button clicked!");
+                // clear local storage
+                localStorage.clear();
+                // reload page
+                location.reload();
+            })
+
             $(document).on('click', '.addPayPeriod', function(){
                 console.log("Add pay period button clicked!");
                 // show the pay period form
                 $('.pp-form-container').addClass('unhidden').removeClass('hidden');
-                
-                // // get start and end dates for pay period
-                // let startDate = prompt("Enter the start date for the pay period (YYYY-MM-DD)");
-                // let endDate = prompt("Enter the end date for the pay period (YYYY-MM-DD)");
-                // console.log({startDate});
-                // console.log({endDate});
-
-
-                // calculate the total hours worked during the pay period
-                // loop through the dates in the range and sum the day totals
-                // style the dates within the pay period
-                // populate the pay period total cell with the total hours worked during the pay period
-                // to change the pay period click on the pay period total cell and modify the start and end dates
+                // make sure form is empty since this btn is for adding new pay periods
+                $('#ppStartDate').val('');
+                $('#ppEndDate').val('');
+                $('#ppSave').data('ppID', '');
             })
 
 
             $(document).on('click', '.ppSave', function(){
                 console.log("save pay period button clicked!");
                 // get start and end dates for pay period from form and save to local storage
+                let ppID = $(this).data('ppID');
                 let startDate = $('#ppStartDate').val();
                 let endDate = $('#ppEndDate').val();
+                console.log({ppID});
                 console.log({startDate});
                 console.log({endDate});               
 
-                savePayPeriodData(startDate, endDate);
-               
-
+                savePayPeriodData(ppID, startDate, endDate);
                 // hide the pay period form
                 // $('.pp-form-container').addClass('hidden').removeClass('unhidden');
             })
@@ -176,7 +246,12 @@
                 total.val(totalTimeWorked);
             })
 
-            $(document).on('click', 'td', function(){
+            $(document).on('click', 'td:not(:last-child)', function(){
+                // add selected class to clicked cell
+                $(this).addClass('selected');
+                // remove selected class from other cells
+                $('td').not(this).removeClass('selected');
+
                 console.log("Clicked on a day!");       
                 // get date from clicked cell
                 let date = $(this).data('date');
@@ -242,18 +317,60 @@
                 // find timeEntryCont div by date on td
                 let tsCont = $(`td[data-date="${date}"] .timeEntryCont`);
                 // define daySummary
-                let daySummary = date 
-                                    ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break) Total: ${formData.dayTotal}` 
-                                    : `0`;
+                let daySummary = date ? `${formData.dayTotal} hrs` : `0`;
                 console.log({daySummary});
                     // ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break) Total: ${formData.dayTotal}, wkno: ${formData.weekNumber}` 
                 // update td with new daySummary
                 tsCont.html(`<div>${daySummary}</div>`);
             });
 
-            
+            $(document).on('click', '.ppTotalLink', function(){
+                console.log("Pay period total clicked!");
+                // get start and end dates for pay period from form and save to local storage
+                // get pay period start and end dates from local storage...or maybe from the cell itself
+                // to get from local storage we need to be able to reliably link the pay period total cell to the pay period start and end dates....maybe try using the end date as the key in local storage???
+                // we would just need to implement a check upon saving that the end date is unique
+                // !!!we need to use a unique id since the payperiod end date can be changed
+
+                // get pay period data from local storage
+                let payPeriodData = getStoredPayPeriodData();
+                // let endDate = $(this).data('endDate');
+                let ppID = $(this).data('ppID');
+                // extract start and end dates from pay period data
+                
+                let startDate = payPeriodData[ppID].payPeriodStart;
+                let endDate = payPeriodData[ppID].payPeriodEnd;
+                console.log({startDate});
+                console.log({endDate});               
+
+                // show the pay period form
+                $('.pp-form-container').addClass('unhidden').removeClass('hidden');
+                // populate form with existing data
+                $('#ppStartDate').val(startDate);
+                $('#ppEndDate').val(endDate);
+            })
       
         /* FUNCTIONS */
+
+                //   // Function to create a table cell with a partial background and tabindex
+                //   function createTableCell(content, className) {
+                //       const td = document.createElement('td');
+                //       if (className) {
+                //         td.className = className;
+                //       }
+                //       td.textContent = content;
+                //       td.tabIndex = 0; // Make the td focusable
+                //       return td;
+                //     }
+
+                //     // Function to create a table row
+                //     function createTableRow(cells) {
+                //       const tr = document.createElement('tr');
+                //       cells.forEach(cell => tr.appendChild(cell));
+                //       return tr;
+                //     }
+
+
 
             // usimg a while loop to loop through a date range
             // /*
@@ -268,7 +385,7 @@
 //             -to change the pay period click on the pay period total cell and modify the start and end dates
 
             // function to loop through a date range so that we can calculate the pay period total for the date range and also style the dates within the pay period
-            function savePayPeriodData(startString, endString){
+            function savePayPeriodData(ppID, startString, endString){
 
                 // calculate the total hours worked during the pay period
                 // loop through the dates in the range and sum the day totals
@@ -281,22 +398,41 @@
                 const start = new Date(startString);
                 const end = new Date(endString);
                 let loopDate = new Date(start);
-                let ppTotal = 0;
+                let ppTotal = 0; // initialize pay period total
 
+                // if this is a new pay period, generate a unique id
+                if(!ppID){
+                    ppID = generateUniqueId();
+                    console.log("New pay period ID: " + ppID);
+                }
+
+                // loop through the dates in the range
+                // overview: get total hours worked for the day then add to total for pay period,
+                //           also, determine location of date within pay period and update day data object with pay period info
                 while(loopDate <= end){
                     console.log({loopDate});
-                    // get total hours worked for the day (extrat from data object)
+                    // convert loopDate to string
                     let loopDateString = loopDate.toISOString().split('T')[0];
-                    let dayData = timesheetData[loopDateString];
+
+                    // if there is no data for this day, create a new object with default values
+                    let dayData;
+                    if(timesheetData[loopDateString]){ 
+                        dayData = timesheetData[loopDateString];
+                    } else { 
+                        dayData = {startTime: '', 
+                                    endTime: '', 
+                                    breakDuration: 0, 
+                                    dayTotal: 0};
+                    }
                     console.log({dayData});
-                    // add dayTotal to total for pay period
-                    if(dayData && dayData.dayTotal){
+
+                    // add total hours from this day to total for pay period
+                    if(dayData.dayTotal){
                         ppTotal = ppTotal + parseFloat(dayData.dayTotal);
                         console.log({ppTotal});
                     }
 
-                    // and maybe update the day data object with pay period info...
-                    // ...like if day has been included in a pay period, what the start/end dates are...etc.
+                    // determine location of date within pay period (start, end, middle)
                     if(loopDateString == startString){
                         var ppPosition = 'start';
                     } else if(loopDateString == endString){
@@ -304,26 +440,41 @@
                     } else {
                         var ppPosition = 'middle';
                     }
-                    saveDayData(loopDateString, {...dayData, payPeriod: ppPosition, payPeriodStart: startString, payPeriodEnd: endString});
-        // and maybe add a class to the td elements????
+                    // update the day data object with pay period info
+                    saveDayData(loopDateString, {...dayData, 
+                                                payPeriod: ppPosition, 
+                                                payPeriodStart: startString, 
+                                                payPeriodEnd: endString, 
+                                                ppID: ppID});
 
                     // increment the date
                     let newDate = loopDate.setDate(loopDate.getDate() + 1);
                     loopDate = new Date(newDate);         
-                }
+                } // END loop
 
-                // save ppTotal to local storage
-                var payPeriodData = getStoredPayPeriodData();
-                payPeriodData[endString] = {
+                // get pay period data from local storage
+                let payPeriodData = getStoredPayPeriodData();
+                // save pay period data (saving the total hours worked during the pay period)
+                payPeriodData[ppID] = {
                     startDate: startString,
                     endDate: endString,
                     total: ppTotal
                 }
+
+                // save ppTotal to local storage
                 localStorage.setItem('payPeriods', JSON.stringify(payPeriodData));
 
                 // style the dates within the pay period...or maybe reload the calendar??? since we're going to be styling stuff when we build the calendar anyway
+                // location.reload();
 
             }
+
+
+            // create a basic unique id generator since we're not using a database
+            function generateUniqueId() {
+                return 'id-' + new Date().getTime();
+            }
+
             // */
             function getFormattedDateString(dateObj) {
                 // const date = new Date();
@@ -366,60 +517,6 @@
                 return Math.floor(daysBetween / 7) + 1;
             }
 
-            // function getCalendarWeekNumber_v2(date) {
-            //     const startOfYear = new Date(date.getFullYear(), 0, 1);
-            //     // Adjust startOfYear to the first Sunday of the year
-            //     const dayOfWeek = startOfYear.getDay(); // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-            //     const firstSunday = dayOfWeek === 0 ? startOfYear : new Date(startOfYear.setDate(startOfYear.getDate() + (7 - dayOfWeek)));
-
-            //     // Calculate the number of days between the date and the first Sunday of the year
-            //     const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
-
-            //     // Calculate the week number
-            //     return Math.floor(daysBetween / 7) + 1;
-            // }
-
-            // function getCalendarWeekNumber_v1(date) {
-            //     const startOfYear = new Date(date.getFullYear(), 0, 1);
-            //     console.log({startOfYear});
-            //     const firstSunday = new Date(startOfYear.setDate(startOfYear.getDate() + (7 - startOfYear.getDay()) % 7));
-            //     console.log({firstSunday});
-            //     const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
-            //     console.log({daysBetween});
-            //     let weekNumber = Math.floor(daysBetween / 7) + 1;
-            //     console.log({weekNumber});
-            //     return Math.floor(daysBetween / 7) + 1;
-            // }
-
-            // function getWeekNumberORIG(date) {
-            //     // Copy date so don't modify original
-            //     date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            //     // Set to nearest Thursday: current date + 4 - current day number
-            //     // Make Sunday's day number 7
-            //     date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
-            //     // Get first day of year
-            //     var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-            //     // Calculate full weeks to nearest Thursday
-            //     var weekNo = Math.ceil(( ( (date - yearStart) / 86400000) + 1)/7);
-            //     // Return array of year and week number
-            //     return [date.getUTCFullYear(), weekNo];
-            // }
-
-            // function getWeekNumber(date){
-            //     // copy date to new date object
-            //     let d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            //     // set day number (0=Sunday, 1=Monday, etc.)
-            //     let dayNum = (d.getDay() + 1) % 7;
-            //     console.log({dayNum});
-            //     // adjust date to nearest Sunday
-            //     d.setDate(d.getDate() - dayNum);
-            //     // calculate week number
-            //     let yearStart = new Date(Date.UTC(d.getFullYear(), 0, 1));
-            //     let weekNumber = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-            //     return weekNumber;
-            // }'
-
-
             // Function to pad a number to two digits
             function padToTwoDigits(number) {
                     return number.toString().padStart(2, '0');
@@ -441,6 +538,7 @@
             function saveDayData(date, data){
                 var timesheetData = getStoredDayData();
                 timesheetData[date] = data;
+                console.log({timesheetData});
                 localStorage.setItem('timeEntries', JSON.stringify(timesheetData));
             }
 
@@ -468,7 +566,7 @@
                 let firstDayInMonth = new Date(currentYear, currentMonth, 1).getDay();
                 // console.log({daysInMonth});                
                 // console.log({firstDayInMonth});
-                let tbl = $('<table class="calendar table table-bordered" id="myCalendar"></table>');
+                let tbl = $('<table class="calendar table table-cell-hover table-cell-focus" id="myCalendar"></table>');
                 let tblHead = $('<thead></thead>');
                 let tblBody = $('<tbody></tbody>');
                 
@@ -488,12 +586,12 @@
                 for (let i = 0; i < 6; i++) {
                     // console.log("--------------------");
                     let bodyRow = $('<tr></tr>');
-                    let payPeriodTotal = false;
+                    let payPeriodTotal = false; // initialize pay period total variable for this week (should ideally only have one pay period total per week)
                     for (let j = 0; j < 7; j++) {
                         // console.log("j is: " + j);
                         let dateString = `${currentYear}-${padToTwoDigits(currentMonth)}-${padToTwoDigits(dx)}`;
-                        console.log({dateString});
-                        let weekNum = getCalendarWeekNumber(new Date(dateString));
+                        // console.log({dateString});
+                        let weekNum = getCalendarWeekNumber(new Date(dateString));                
                         let cell = $(`<td class="cal-day" data-date="${dateString}"></td>`);
                         if (i === 0 && j < firstDayInMonth) {
                             cell.text('');
@@ -502,6 +600,7 @@
                             cell.html(`<div class="fw-bold">${dx}</div>
                                         <div class="timeEntryCont"></div>`);
                             let existingData = getStoredDayData();
+                            console.log({existingData});
                             let data = existingData[dateString] ? existingData[dateString] : {startTime: '', endTime: '', breakDuration: 0};
                             // console.log({data});
                             if(data.dayTotal){
@@ -510,38 +609,45 @@
                                 tsCont.html(`${data.dayTotal} hrs`);
                             }
 
+                            let dayPpID = data.ppID;
+                            console.log({dayPpID});
                             // style the cell if it is part of a pay period
                             if(data.payPeriod){
                                 cell.addClass('pp-day');
                                 if(data.payPeriod == 'start'){
                                     cell.addClass('pp-start');
-                                    bodyRow.append(`<td class="test-pp-start"></td>`);
                                 } else if(data.payPeriod == 'end'){
                                     cell.addClass('pp-end');
                                 } else {
                                     cell.addClass('pp-middle');
                                 }
                             }
-                            // add pay period total to pay period total cell for this row if this day is the end of a pay period
-                            if(ppData[dateString]){
-                                // cell.addClass('pp-day');
-                                // cell.append(`<div class="pp-total">${ppData[dateString].total}</div>`);
-                                payPeriodTotal = ppData[dateString].total;
+
+                            // add pay period total to pay period total cell at end of this row if this day is the end of a pay period
+                            // if(ppData[dayPpID] && ppData[dayPpID].endDate == dateString){ 
+                            if(ppData[dayPpID]){   
+                                payPeriodTotal = ppData[dayPpID].total; 
+                              
+                                console.log({dayPpID});
+                                console.log({payPeriodTotal});
+                            
+                                console.log({data});
+                                console.log({ppData});
                             }
                             dx++;
                         }
                         bodyRow.append(cell);
+                        // if there are 7 cells in the row, add the weekly total and pay period total cells
                         if(j === 6){
-                            // console.log("Saturday or last day of month!");
+                            // if there is a pay period total for this week add total amt to pp total cell
                             if(payPeriodTotal){
                                 bodyRow.append(`<td class="week-total"></td>
-                                                <td class="pp-total">${payPeriodTotal} hrs</td>`);
+                                                <td class="pp-total"><a href="#" class="ppTotalLink" data-endDate="${dateString}">${payPeriodTotal} hrs</a></td>`);
+                            // if there is no pay period total for this week add empty cells
                             } else {
                                 bodyRow.append(`<td class="week-total"></td>
                                                 <td class="pp-total"></td>`);
                             }
-                            // bodyRow.append(`<td class="week-total"></td>
-                            //                 <td class="pp-total></td>`);
                         }
                     }
                     tblBody.append(bodyRow);
@@ -551,7 +657,6 @@
                 calendarDiv.append(tbl);
             }
 
-        
     </script>
 
 
