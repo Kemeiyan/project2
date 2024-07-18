@@ -11171,6 +11171,8 @@ td.pp-end{
   height: 100px;
 }
 
+
+
 .cal-day:hover {
   background-color: var(--bs-light);
   color: #563856;
@@ -11183,7 +11185,24 @@ td.pp-end{
 .pp-total {
   background-color: var(--bs-white)!important; 
   border-color: var(--bs-table-border-color)!important;
+  width: 100px;
 }
+
+/* experimental: variable sizes for calendar td's based on device screen size */
+/* @media (min-width: 1200px) {
+  .cal-day {
+    width: 100px;
+    height: 100px;
+  }
+} */
+
+/* experimental: variable sizes for calendar td's based on device screen size */
+/* @media (min-width: 1200px) {
+  .pp-total {
+    width: 100px;
+    height: 100px;
+  }
+} */
 
 .calendar-title {
   font-size: 1.5rem;
@@ -11259,12 +11278,16 @@ td.pp-end{
 /* might not need... */
 .hidden { 
   display: none; 
+  /* visibility: hidden; */
+  /* position: absolute;
+  left: -9999px; */
 }
 
 .unhidden { 
   display: block; 
+  /* visibility: visible; */
 }
 
-.hidden { opacity: 0; transition: opacity 0.5s; }
-.unhidden { opacity: 1; transition: opacity 0.5s; }
+/* .hidden { opacity: 0; transition: opacity 0.5s; }
+.unhidden { opacity: 1; transition: opacity 0.5s; } */
 /*     */

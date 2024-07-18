@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="css/styles.css" rel="stylesheet" />
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
+    <!-- DataTables JavaScript -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    
+<!-- MIGHT NOT NEED DATATABLES FIXED HEADERS, take out if superfluous -->
+    <!-- FixedHeader CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedheader/3.2.1/css/fixedHeader.dataTables.min.css"/>
+    <!-- FixedHeader JavaScript -->
+    <script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.2.1/js/dataTables.fixedHeader.min.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+    <h1>Time and Pay Tracker</h1>
+    
+    <div class="d-flex justify-content-between">
+        <div>
+            <!-- <button type="button" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button> -->
+        </div>
+        <div>
+            <button type="button" id="loadDemoData" class="loadDemoData btn btn-outline-info"><i class="fa fa-snowplow me-1"></i>Load demo data</button>
+            <button type="button" id="clearLocalData" class="clearLocalData btn btn-outline-danger"><i class="fa fa-triangle-exclamation me-1"></i>Clear all data</button>
+        </div>
+    </div>
+
+    <div class="te-form-container card-mp toggleContainer hidden">
+        <div class="card-title fw-bold">Time Entry</div>
+        <form id="timeEntryForm">
+            <input type="hidden" name="timeEntryDate" id="timeEntryDate" value="">
+            <div class="me-2 mt-3">
+                <div class="mb-2">
+                    <label for="startTime">Start time</label>
+                    <input type="time" name="startTime" id="startTime" class="form-control form-control-sm timeInp reqInputs">
+                </div>
+                <div class="mb-2">
+                    <label for="endTime">End time</label>
+                    <input type="time" name="endTime" id="endTime" class="form-control form-control-sm timeInp reqInputs">
+                </div>
+                <div class="mb-2">
+                    <label for="breakDuration">Break</label>
+                    <input type="number" name="breakDuration" id="breakDuration" class="form-control form-control-sm timeInp" placeholder="0">
+                </div>
+                <div class="mb-2">
+                    <label for="dayTotal">Total</label>
+                    <input type="number" name="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
+                </div>
+                <div class="d-flex justify-content-between mt-3">
+                    <div>
+                        <button type="button" id="closeTimeEntryForm" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
+                        <button type="button" id="saveTimeEntry" class="btn btn-primary btn-sm" data-date="">Save</button>
+                    </div>
+                    <div>
+                        <button type="button" id="delTimeEntry" class="btn btn-danger btn-sm"><i class="fa fa-trash me-1"></i>Delete time entry</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+
+    <div class=" calendarContainer card-mp">
+        <!-- calendar goes here -->
+    </div>
+
+    <div>
+        <button type="button" id="addPayPeriod" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button>
+    </div>
+
+    <div class="pp-form-container card-mp toggleContainer hidden">   
+        <div class="card-title fw-bold mb-3">
+            Pay Period
+        </div>      
+        <form id="payPeriodForm">
+            <input type="hidden" name="payPeriodID" id="payPeriodID" class="testClass" value="">
+            <div class="mb-2">
+                <label for="ppStartDate">Start Date</label>
+                <input type="date" name="ppStartDate" id="ppStartDate" class="testClass form-control reqInputs">
+            </div>
+            <div class="mb-2">
+                <label for="ppEndDate">End Date</label>
+                <input type="date" name="ppEndDate" id="ppEndDate" class="testClass form-control reqInputs">
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+                <div>
+                    <button type="button" id="closePayPeriodForm" class="dismissForm btn btn-outline-secondary btn-sm">Close</button>
+                    <button type="button" id="savePayPeriod" class="btn btn-primary btn-sm" data-ppID="">Save</button>
+                </div>
+                <div>
+                    <button type="button" id="delPayPeriod" class="btn btn-danger btn-sm"><i class="fa fa-trash me-1"></i>Delete pay period</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+            <!-- Bootstrap core JS-->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Core theme JS-->
+            <script src="js/scripts.js"></script>
+
+    <script>
+       
+
+
+
+
+
+        /* EVENTS */
+            $(()=>{
+                console.log("Hello World!");
+                buildCalendar();
+            })
+
+            $(document).on('click', '#delTimeEntry', function(){
+                console.log("Delete time entry button clicked!");
+                // get date from delete button
+
+                // find time entry record for date in local storage using date 
+                
+                // if time entry record has a ppid, locate the pay period record for the given ppid in local storage
+                // subtract total for day from pay period record total
+                
+                // delete time entry record OR just clear out start time, end time, break duration, and day total
+
+            })
+
+            $(document).on('click', '#delPayPeriod', function(){
+                console.log("Delete pay period button clicked!");
+
+                let delBf = btnFlare($(this));
+                delBf.confirm();
+                return;
+
+                // get ppid from form hidden input
+                let ppID = $(this).closest('form').find('input[name="payPeriodID"]').val();
+                console.log({ppID});
+
+                // get time entry reords with given ppid from local storage
+                // clear out ppid, ppPosition, ppStartDate, and ppEndDate from time entry records
+                let timesheetData = getStoredDayData();
+                console.log({timesheetData});
+                
+                for (const [date, dayData] of Object.entries(timesheetData)) {
+                    if(dayData.ppID == ppID){
+                        console.log({dayData});
+                        console.log("Updating pay period info for daily records that are not in new pay period");
+                        saveDayData(date, {...dayData, 
+                                            ppID: '',
+                                            ppPosition: '', 
+                                            ppStartDate: '', 
+                                            ppEndDate: ''
+                                        })
+                        // console.log({dayData});
+                        let myNewDayData = getStoredDayData();
+                        console.log({myNewDayData});
+                    }
+                }
+                // console.log('ppinfo for time entry records cleared');
+                // console.log({timesheetData});
+
+                // delete pay period record
+                deletePayPeriodRec(ppID);
+
+                // reload page (since we're styling the calendar based on pay period data)
+                location.reload();
+            })
+
+
+            $(document).on('click', '#loadDemoData', function(){
+                console.log("Load demo data button clicked!");
+                setUpDemoData();
+                // see if setup worked
+                // let teData = getStoredDayData();
+                // console.log({teData});
+            })
+
+            $(document).on('click', '#clearLocalData', function(){
+                console.log("Clear data button clicked!");
+                // clear local storage
+                localStorage.clear();
+                // reload page
+                location.reload();
+            })
+
+            $(document).on('click', '#addPayPeriod', function(){
+                console.log("Add pay period button clicked!");
+                // show the pay period form
+                $('.pp-form-container').addClass('unhidden').removeClass('hidden');
+
+                // make sure form is empty and validation reset since this btn is for adding new pay periods
+                resetInvalidForm($('#payPeriodForm'));
+                resetForm($('#payPeriodForm'));
+            })
+
+            $(document).on('click', '#savePayPeriod', function(){
+                console.log("save pay period button clicked!");
+                // get start and end dates for pay period from form and save to local storage
+                // let ppID = $(this).data('ppid');
+                let ppID = $('#payPeriodID').val();;
+                let startDate = $('#ppStartDate').val();
+                let endDate = $('#ppEndDate').val();
+                console.log({ppID});
+                console.log({startDate});
+                console.log({endDate});               
+
+                savePayPeriodData(ppID, startDate, endDate); // reloads the page after save since we're styling the calendar based on pay period data
+
+            })
+
+            // $(document).on('click', 'td:not(:last-child)', function(){
+            $(document).on('click', 'td:not(:nth-last-child(-n+2))', function(){
+            // $('td').not(':nth-last-child(-n+2)').on('click', function() {
+                // add selected class to clicked cell
+                $(this).addClass('selected');
+                // remove selected class from other cells
+                $('td').not(this).removeClass('selected');
+                // reset form
+                resetInvalidForm($('#timeEntryForm'));
+                console.log("Clicked on a day!");       
+                // get date from clicked cell
+                let dateString = $(this).data('date');
+                console.log({dateString});
+                // store date in save button (or maybe somewhere better?)
+                $('#timeEntryDate').val(dateString);
+                // get any existing data from local storage
+                let timesheetData = getStoredDayData();
+                let dayData = timesheetData[dateString] ? timesheetData[dateString] : {startTime: '', endTime: '', breakDuration: 0};
+                // show form
+                $('.te-form-container').addClass('unhidden').removeClass('hidden');
+                
+            // put date in form title for clarity (format date)
+            // format date manually for now but think about using a library like date-fns or moment.js
+                let formattedDate = usDateFormat(dateString);
+                console.log({formattedDate});
+            // // //
+
+                $('.te-form-container .card-title').text(`Time Entry for ${formattedDate}`);
+                // populate form with existing data
+                $('input[name="startTime"]').val(dayData.startTime);
+                $('input[name="endTime"]').val(dayData.endTime);
+                $('input[name="breakDuration"]').val(dayData.breakDuration);
+                $('input[name="dayTotal"]').val(dayData.dayTotal);                       
+            })
+
+            $(document).on('click', '.dismissForm', function(){
+                // uses a generic event to close forms
+                console.log("Generic closing form event!");
+                // hide form
+                let container = $(this).closest('.toggleContainer');
+                container.addClass('hidden').removeClass('unhidden');
+                // reset invalid styling/feedback
+                let form = container.find('form');
+                resetInvalidForm(form);
+            })
+
+            $(document).on('click', '#saveTimeEntry', function(event) {
+                console.log("Save button was clicked!");
+                // check to make sure start/end times aree not empty
+                dayCheckEmptyInputs();
+                if(!dayCheckEmptyInputs()){
+                    return;
+                }
+                // grab data and save to local storage  
+                // grab date from where it is stored after the td was clicked (stored on btn data attribute for now)
+                let dateString = $(this).data('date');
+                console.log({dateString});
+                // define form
+                let form = $(this).closest('form');
+                console.log({form});
+                // define form data
+                let formData = {
+                    startTime: form.find('input[name="startTime"]').val(),
+                    endTime: form.find('input[name="endTime"]').val(),
+                    breakDuration: form.find('input[name="breakDuration"]').val(),
+                    dayTotal: form.find('input[name="dayTotal"]').val()
+                    // weekNumber: getCalendarWeekNumber(new Date(date))               
+                };
+                console.log({dateString});
+                console.log({formData});
+                // Save the data to local storage
+                saveDayData(dateString, formData);
+            // Hide the form and update the ts summary
+                // hide form
+                $('.te-form-container').addClass('hidden').removeClass('unhidden');
+                // find timeEntryCont div by date on td
+                let tsCont = $(`td[data-date="${dateString}"] .timeEntryCont`);
+                // define daySummary
+                let daySummary = dateString ? `${formData.dayTotal} hrs` : `0`;
+                console.log({daySummary});
+                    // ? `${formData.startTime} - ${formData.endTime} (${formData.breakDuration} min break) Total: ${formData.dayTotal}, wkno: ${formData.weekNumber}` 
+                // update td with new daySummary
+                tsCont.html(`<div>${daySummary}</div>`);
+            });
+
+            $(document).on('click', '.ppTotalLink', function(){
+                console.log("Pay period total clicked!");
+                // show the pay period form
+                $('.pp-form-container').addClass('unhidden').removeClass('hidden');
+                // reset form
+                resetInvalidForm($('#payPeriodForm'));
+
+                // get pay period data from local storage
+                let payPeriodData = getStoredPayPeriodData();
+                console.log({payPeriodData});
+                let ppID = $(this).data('ppid');
+                console.log({ppID});
+
+                // extract start and end dates from pay period data
+                let startDate = payPeriodData[ppID].startDate;
+                let endDate = payPeriodData[ppID].endDate;
+                console.log({startDate});
+                console.log({endDate});               
+
+                // populate form with the existing data
+                $('#payPeriodID').val(ppID);
+                $('#ppStartDate').val(startDate);
+                $('#ppEndDate').val(endDate);
+            })
+      
+            $(document).on('change', '.reqInputs', function(){
+                console.log("Pay period input changed!");
+                // remove invalid feedback styling when input is changed, user doesn't need to be told the input is invalid if they're actively trying to fix it
+                if($(this).hasClass('is-invalid')){
+                    invalidInput($(this), false);
+                }
+            })
+
+            $(document).on('change', '.timeInp', function(){
+                // update day total when time inputs are changed
+                updateDayTotal($(this));
+            })
+
+        /* FUNCTIONS */
+
+
+            // function for confirm button
+            function btnFlare(btnObj){
+                console.log("Button clicked!");
+                const newBtnObj = new BtnObj(btnObj);
+                $(document).on('click', '.cancelConfirm, .confirmFlare', function(){
+                    newBtnObj.confirmOff();
+                })
+                return newBtnObj;
+            }
+
+            function BtnObj(btnObj){
+                this.btn = btnObj;
+                this.btnHtml = $(this.btn).html();
+
+                this.btnHTML = function(){
+                    if($(this.btn).length > 0){
+                        return $(this.btn).html();
+                    } else {
+                        return false;
+                    }
+                }
+
+                this.spinOn = function(){
+                    $(this.btn).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`);
+                    $(this.btn).attr('disabled', true);
+                }
+
+                this.spinOnSmall = function(){
+                    $(this.btn).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
+                    $(this.btn).attr('disabled', true);
+                }
+
+                this.spinOff = function(optText=false){
+                    if(optText){
+                        $(this.btn).html(optText);
+                    } else {
+                        $(this.btn).html(this.btnHtml);
+                    }
+                    $(this.btn).attr('disabled', false);
+                }
+
+                this.disable = function(){
+                    $(this.btn).attr('disabled', true);
+                }
+
+                this.enable = function(){
+                    $(this.btn).attr('disabled', false);
+                }
+
+                this.confirm = function(confirmClass, text, color = 'primary', warningText = false, size = 'regular'){
+                this.confirmOff();
+                let parent = $(this.btn).parent();
+                let btnEl = $(this.btn);
+                parent.addClass('confirm-parent');
+
+                let confirmCont = `<div class="cancel-confirm-container"></div>`;
+
+                if(warningText){
+                    popToast(warningText);
+                } else if(size == 'small'){
+                    popToast(`<div>${warningText}</div><div>Click <i class="fa-solid fa-check"></i> to confirm or <i class="fa-solid fa-xmark"></i> to cancel.</div>`);
+                }
+
+                parent.html(confirmCont);
+                let canConDiv = parent.find('.cancel-confirm-container');
+                canConDiv.html(`<div class="can-con-btn"></div>`);
+
+                let btnDiv = canConDiv.find('.can-con-btn');
+                btnDiv.html(btnEl);
+
+                $(this.btn).attr('disabled',true);
+                $(this.btn).addClass('slide-over me-0');
+
+                let cancel = 'Cancel';
+
+                if (size == 'small'){
+                    text = `<i class="fa-solid fa-check"></i>`;
+                    cancel = `<i class="fa-solid fa-xmark"></i>`;
+                }
+
+                let confirmBtn = `<button type="button" class="btn btn-outline-secondary border-0 cancelConfirmFlare mx-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel">${cancel}</button>
+                <button type="button" class="btn btn-outline-${color} border-0 ${confirmClass} confirmFlare" data-bs-toggle="tooltip" data-bs-placement="top" title="Confirm">${text}</button>`;
+
+
+                canConDiv.append(confirmBtn);
+
+                let canclBtn = parent.find('.cancelConfirmFlare');
+                let confrBtn = parent.find('.confirmFlare');
+
+                let tempBtns = {
+                    cancel: canclBtn,
+                    confirm: confirmBtn
+                }
+
+                return tempBtns;
+                }
+
+                this.confirmSmall = function(confirmClass, color = 'primary', warningText = false){
+                this.confirm(confirmClass, 'noText', color, warningText, 'small');
+                }
+
+                this.confirmOff = function(){
+                    let container = $('.cancel-confirm-container');
+                    let btnContainer = container.find('.can-con-btn');
+                    let btn = btnContainer.find('button');
+                    let parent = container.parent();
+                    parent.removeClass('confirm-parent');
+                    container.remove();
+                    parent.html(btn);
+                    $(btn).removeClass('slide-over me-0');
+                    $(btn).attr('disabled', false);
+                }
+
+            }
+
+            function updateDayTotal(timeInpElement){
+                // start time, end time, or break duration was modified...update total hours for day
+                console.log("Time changed!");
+                // retrieve values from form
+                let start = timeInpElement.closest('form').find('input[name="startTime"]').val();
+                let end = timeInpElement.closest('form').find('input[name="endTime"]').val();
+                let breakTime = timeInpElement.closest('form').find('input[name="breakDuration"]').val();
+                // retrieve date from hidden input
+                let focusDate = timeInpElement.closest('form').find('#timeEntryDate').val();
+                console.log({focusDate});
+                // retrieve total input field
+                let total = timeInpElement.closest('form').find('input[name="dayTotal"]');
+                // console.log({total});
+                // convert start/end times to datetime objects
+                let startDateTime = new Date(`${focusDate}T${start}:00`);
+                let endDateTime = new Date(`${focusDate}T${end}:00`);
+                // console.log({startDateTime});
+                // console.log({endDateTime});
+
+                // calculate difference between start and end times (in minutes)
+                let diffMinutes = (endDateTime - startDateTime) / 60000;
+                // accommodate for break time
+                let totalMinutes = diffMinutes - breakTime;
+                // convert minutes to hours/minutes
+                let hours = Math.floor(totalMinutes / 60);
+                let minutes = totalMinutes % 60;
+                // calculate total hours worked
+                let totalTimeWorked = (hours + (minutes / 60)).toFixed(2);
+                // console.log({totalTimeWorked});
+                // populate total field
+                total.val(totalTimeWorked);
+            }
+
+            // function to add/remove invalid feedback styling for a single input
+            function invalidInput(element, invalid=true, invalidFeedback=false){
+                let parent = element.parent();
+                let feedback = parent.find('.invalid-feedback');
+                feedback.remove();
+
+                if(invalid){
+                    element.addClass('is-invalid');
+                    if(invalidFeedback){
+                        parent.append(`<div class="invalid-feedback">${invalidFeedback}</div>`);
+                    }
+                } else {
+                    element.removeClass('is-invalid');
+                }
+            }
+
+            // reset invalid feedback styling for a form
+            function resetInvalidForm(form){
+                console.log("Resetting invalid form!: " + form);
+                form = $(form); // was just for testing
+                // remove invalid feedback styling from form
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback').remove();
+            }
+
+            // reset form values
+            function resetForm(form){
+                console.log("Resetting form values!: " + form);
+                form = $(form); // was just for testing
+                // set all form inputs to empty
+                form.find('input').val('');
+            }
+
+            // quickly populate form with test data via console
+            function testDataDay(){
+                // populate form with test data
+                $('input[name="startTime"]').val('08:00');
+                $('input[name="endTime"]').val('16:00');
+                $('input[name="breakDuration"]').val('0');
+                $('input[name="dayTotal"]').val('8.00');
+            }
+
+            function dayCheckEmptyInputs(){
+                let isValid = true;
+                // check to make sure start time is not empty
+                if($('input[name="startTime"]').val() == ''){
+                    invalidInput($('input[name="startTime"]'), true, 'Please enter a start time.');
+                    isValid = false;
+                }
+                // check to make sure end time is not empty
+                if($('input[name="endTime"]').val() == ''){
+                    invalidInput($('input[name="endTime"]'), true, 'Please enter an end time.');
+                    isValid = false;
+                }
+                return isValid;
+            }
+
+            function ppCheckEmptyInputs(startString, endString){
+                let isValid = true;
+                // check to make sure start date is not empty
+                if(startString == ''){
+                    invalidInput($('#ppStartDate'), true, 'Please enter a start date.');
+                    isValid = false;
+                }
+                // check to make sure end date is not empty
+                if(endString == ''){
+                    invalidInput($('#ppEndDate'), true, 'Please enter an end date.');
+                    isValid = false;
+                }
+                return isValid;
+            }
+
+            // make sure pay period complies with rules before saving
+            function payPeriodValidation(ppID, startString, endString, payPeriodData){
+                // check to make sure start/end dates are not empty
+                if(!ppCheckEmptyInputs(startString, endString)){
+                    return false;
+                }
+
+                // check to make sure start date is before end date
+                if(startString >= endString){
+                    invalidInput($('#ppStartDate'), true, 'Start date must be before end date!');
+                    return false;
+                }
+
+                // check to make sure start and end dates don't overlap with existing pay periods
+                for (const [payPeriodID, ppData] of Object.entries(payPeriodData)) {
+                    
+                    if(ppID != payPeriodID){ // check to make sure we're not comparing the same pay period
+                        // check start date
+                        if(startString >= ppData.startDate && startString <= ppData.endDate){
+                            // replace alert with a form validation message
+                            invalidInput($('#ppStartDate'), true, 'Start date overlaps with existing pay period.');  
+                            return false; 
+                        }
+                        // check end date
+                        if(endString >= ppData.startDate && endString <= ppData.endDate){
+                            // replace alert with a form validation message
+                            invalidInput($('#ppEndDate'), true, 'End date overlaps with existing pay period.');
+                            return false;            
+                        }
+                    }
+                }
+                return true;
+            }
+            
+
+
+            // create a basic unique id generator since we're not using a database
+            function generateUniqueId() {
+                return 'id-' + new Date().getTime();
+            }
+
+            // function getFormattedDateString(dateObj) {
+            //     // const date = new Date();
+
+            //     let day = String(dateObj.getDate()).padStart(2, '0');
+            //     let month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            //     let year = dateObj.getFullYear();
+
+            //     let formattedDate = `${year}-${month}-${day}`;
+            //     console.log(formattedDate); // Example output: "2024-05-30"
+            //     return formattedDate;
+            // }
+
+            function usDateFormat(dateString){
+                // Split the date string to reformat to us format
+                let [year, month, day] = dateString.split("-");
+                // Format the date as "MM/DD/YYYY"
+                let formattedDate = `${month}/${day}/${year}`;
+                return formattedDate;
+            }
+
+            function getCalendarWeekNumber(date) {
+                // Get the first day of the year
+                const startOfYear = new Date(date.getFullYear(), 0, 1);
+                
+                // Find the first Sunday of the year
+                const firstSunday = new Date(startOfYear);
+                firstSunday.setDate(firstSunday.getDate() + (7 - firstSunday.getDay()) % 7);
+                
+                // Calculate the number of days between the date and the first Sunday of the year
+                const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+                
+                // Calculate the week number
+                return Math.floor(daysBetween / 7) + 1;
+            }
+
+            // function getCalendarWeekNumber_v3(date) {
+            //     console.log({date});
+            //     let startOfYear = new Date(date.getFullYear(), 0, 1);
+            //     console.log({startOfYear});
+            //     // Adjust startOfYear to the first Sunday of the year
+            //     let firstSunday = new Date(startOfYear.setDate(startOfYear.getDate() - startOfYear.getDay() + 7));
+            //     console.log({firstSunday});
+            //     // Calculate the number of days between the date and the first Sunday of the year
+            //     let daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+            //     console.log({daysBetween});
+            //     // Calculate the week number
+            //     return Math.floor(daysBetween / 7) + 1;
+            // }
+
+            // Function to pad a number to two digits
+            function padToTwoDigits(number) {
+                    return number.toString().padStart(2, '0');
+                }
+
+            // retrieve daily timesheet data from local storage
+            function getStoredDayData(){
+                var timesheetData = localStorage.getItem('timeEntries');
+                return timesheetData ? JSON.parse(timesheetData) : {};
+            }
+
+            // retrieve pay period data from local storage
+            function getStoredPayPeriodData(){
+                var payPeriodData = localStorage.getItem('payPeriods');
+                return payPeriodData ? JSON.parse(payPeriodData) : {};
+            }
+
+            // save data to local storage
+            function saveDayData(date, data){
+                var timesheetData = getStoredDayData();
+                timesheetData[date] = data;
+                console.log({timesheetData});
+                localStorage.setItem('timeEntries', JSON.stringify(timesheetData));
+            }
+
+            // delete a single pay period record from local storage
+            function deletePayPeriodRec(ppID){
+                // get pay period data from local storage
+                let payPeriodData = getStoredPayPeriodData();
+                console.log({payPeriodData});
+
+                if(payPeriodData && payPeriodData[ppID]){
+                    // delete pay period record from object
+                    delete payPeriodData[ppID];
+                    // update local storage so record is deleted
+                    localStorage.setItem('payPeriods', JSON.stringify(payPeriodData));
+                }
+
+                console.log('pay period record deleted');
+                let myNewPayPeriodData = getStoredPayPeriodData(); // just for testing
+                console.log({myNewPayPeriodData});
+            }
+
+
+            // function to loop through a date range so that we can calculate the pay period total for the date range and also style the dates within the pay period
+            function savePayPeriodData(ppID, startString, endString){
+                /*
+                calculate the total hours worked during the pay period
+                loop through the dates in the range and sum the day totals
+                style the dates within the pay period
+                populate the pay period total cell with the total hours worked during the pay period
+                */
+                    
+                // get pay period data from local storage
+                let payPeriodData = getStoredPayPeriodData();
+
+                // pay period validation
+                if(!payPeriodValidation(ppID, startString, endString, payPeriodData)){
+                    // if pay period validation fails, exit the function 
+                    return;
+                }
+                
+                // get daily time entries from local storage
+                let timesheetData = getStoredDayData();
+                const start = new Date(startString);
+                const end = new Date(endString);
+                let loopDate = new Date(start);
+                let ppTotal = 0; // initialize pay period total
+
+                // if this is a new pay period, generate a unique id
+                if(!ppID){
+                    ppID = generateUniqueId();
+                    console.log("New pay period ID: " + ppID);
+                }
+
+                // loop through the dates in the range
+                // overview: get total hours worked for the day then add to total for pay period,
+                //           also, determine location of date within pay period and update day data object with pay period info
+                while(loopDate <= end){
+                    console.log({loopDate});
+                    // convert loopDate to string
+                    let loopDateString = loopDate.toISOString().split('T')[0];
+
+                    // if there is no data for this day, create a new object with default values
+                    let dayData;
+                    if(timesheetData[loopDateString]){ 
+                        dayData = timesheetData[loopDateString];
+                    } else { 
+                        dayData = {
+                            startTime: '', 
+                            endTime: '', 
+                            breakDuration: 0, 
+                            dayTotal: 0
+                        };
+                    }
+                    console.log({dayData});
+
+                    // add total hours from this day to total for pay period
+                    if(dayData.dayTotal){
+                        ppTotal = ppTotal + parseFloat(dayData.dayTotal);
+                        console.log({ppTotal});
+                    }
+
+                    // determine location of date within pay period (start, end, middle)
+                    let ppPosition;
+                    if(loopDateString == startString){
+                        ppPosition = 'start';
+                    } else if(loopDateString == endString){
+                        ppPosition = 'end';
+                    } else {
+                        ppPosition = 'middle';
+                    }
+                    // update the day data object with pay period info
+                    saveDayData(loopDateString, {
+                        ...dayData, 
+                        ppID: ppID,
+                        ppPosition: ppPosition, 
+                        ppStartDate: startString, 
+                        ppEndDate: endString
+                    });
+
+                    // increment the date
+                    // let newDate = loopDate.setDate(loopDate.getDate() + 1);
+                    // loopDate = new Date(newDate);
+                    loopDate.setDate(loopDate.getDate() + 1);         
+                } // END loop
+
+                // save pay period data (saving the total hours worked during the pay period)
+                payPeriodData[ppID] = {
+                    startDate: startString,
+                    endDate: endString,
+                    total: ppTotal
+                }
+                console.log({payPeriodData});
+
+                // update pay period info in daily records that are not in this new pay period (were in the old pay period)
+                for (const [date, dayData] of Object.entries(timesheetData)) {
+                    let dayDate = new Date(date);
+
+                    if(dayData.ppID == ppID && (dayDate < start || dayDate > end)){
+                        console.log("Updating pay period info for daily records that are not in new pay period");
+                        saveDayData(date, {...dayData, 
+                                            ppID: '',
+                                            ppPosition: '', 
+                                            ppStartDate: '', 
+                                            ppEndDate: ''
+                                        })
+                    }
+                }
+
+                // save ppTotal to local storage
+                localStorage.setItem('payPeriods', JSON.stringify(payPeriodData));
+
+                // style the dates within the pay period...or maybe reload the calendar??? since we're going to be styling stuff when we build the calendar anyway
+                location.reload();
+            }
+
+            // Function to build the calendar
+            function buildCalendar(){
+                // set values of current day/month/year
+                let today = new Date();
+                let currentMonth = today.getMonth();
+                let currentYear = today.getFullYear();
+                // console.log({today});
+                // console.log({currentMonth});
+                // console.log({currentYear});
+
+                // set calendar container
+                let calendarDiv = $(".calendarContainer");
+
+                // set up calendar title
+                let monthNames = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
+                let calendarTitle = $('<div class="calendar-title text-center"></div>').text(`${monthNames[currentMonth]} ${currentYear}`);
+                calendarDiv.append(calendarTitle);
+
+                // set up calendar table
+                let daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                let firstDayInMonth = new Date(currentYear, currentMonth, 1).getDay();
+                // console.log({daysInMonth});                
+                // console.log({firstDayInMonth});
+                let tbl = $('<table class="calendar table table-cell-hover table-cell-focus" id="myCalendar"></table>');
+                let tblHead = $('<thead></thead>');
+                let tblBody = $('<tbody></tbody>');
+                
+                // set up table header
+                let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat','Weekly Total','Pay Period Total'];
+                let headerRow = $('<tr></tr>');
+                $.each(daysOfWeek, (i, v) => {
+                    let th = $('<th></th>').text(v);
+                    headerRow.append(th);
+                })
+                tblHead.append(headerRow);
+                
+                // get stored pay period data so we can populate the calendar with pay period totals and style the pay period dates
+                let ppData = getStoredPayPeriodData();
+                // set up table body
+                let dx = 1;
+                for (let i = 0; i < 6; i++) {
+                    // console.log("--------------------");
+                    let bodyRow = $('<tr></tr>');
+                    let payPeriodTotal = false; // initialize pay period total variable for this week (should ideally only have one pay period total per week)
+                    let ppTotalHtml = ''; // initialize pay period total html for this week (append to this string if there are multiple pay periods ending in the same week)
+
+                    for (let j = 0; j < 7; j++) {
+                        // console.log("j is: " + j);
+                        let dateString = `${currentYear}-${padToTwoDigits(currentMonth + 1)}-${padToTwoDigits(dx)}`;
+                        // console.log({dateString});
+                        let weekNum = getCalendarWeekNumber(new Date(dateString));                
+                        let cell = $(`<td class="cal-day" data-date="${dateString}"></td>`);
+                        if (i === 0 && j < firstDayInMonth) {
+                            cell.text('');
+                        } else if (dx <= daysInMonth) {
+                            cell.dayDate = dx;
+                            cell.html(`<div class="fw-bold">${dx}</div>
+                                        <div class="timeEntryCont"></div>`);
+                            let timesheetData = getStoredDayData();
+                            // console.log({timesheetData});
+
+                            // if there is no data for this day, create a new object with default values
+                            let dayData;
+                            if(timesheetData[dateString]){ 
+                                dayData = timesheetData[dateString];
+                            } else { 
+                                dayData = {
+                                    startTime: '', 
+                                    endTime: '', 
+                                    breakDuration: 0, 
+                                    dayTotal: 0
+                                }; // don't want to display dayTotal if it's 0
+                            }
+                            // console.log({dateString});
+                            // console.log({dayData});
+
+                            // populate cell with day data
+                            if(dayData.dayTotal && dayData.dayTotal != 0){
+                                let tsCont = cell.find('.timeEntryCont');
+                                tsCont.html(`${dayData.dayTotal} hrs`);
+                            }
+
+                            // pay period related data/styling
+                            // check to see if this day is part of a pay period (time entry record will have a ppID if it is part of a pay period)
+                            let ppID = false;
+                            if(dayData.ppID && dayData.ppID != ''){
+                                dayPpID = dayData.ppID;
+                                // console.log({dayPpID});
+
+                                // style the cell depending on position within pay period
+                                // cell.addClass('pp-day'); // prolly dont need this extra class
+                                // if this day is the end of a pay period add total hours worked during pay period to content for the final cell in the row
+                                if(ppData[dayPpID] && ppData[dayPpID].endDate == dateString){
+                                    // add pay period total to pay period total cell at end of this row if this day is the end of a pay period
+                                    payPeriodTotal = ppData[dayPpID].total; 
+                                    // if there is a pay period that ends within this week add total amt to pp total cell (even if it is 0, since the link allows us to edit the pay period)
+                                    if(typeof payPeriodTotal === 'number' && payPeriodTotal !== false){
+                                        // add to html string for pay period total cell in case there are multiple pay periods ending in the same week
+                                        // let ppRange = `${ppData[dayPpID].startDate} to ${ppData[dayPpID].endDate}`;
+
+                                        let formattedStartDate = usDateFormat(ppData[dayPpID].startDate);
+                                        let formattedEndDate = usDateFormat(ppData[dayPpID].endDate);
+                                        let ppRange = `${formattedStartDate} to ${formattedEndDate}`;
+                                        ppTotalHtml += `<div><a href="#" class="ppTotalLink" title="${ppRange}" data-enddate="${dateString}" data-ppid="${dayPpID}">${payPeriodTotal} hrs</a></div>`;
+                                    }
+                                    // add class to style day in pay period
+                                    cell.addClass('pp-end');
+                                } else if(ppData[dayPpID] && ppData[dayPpID].startDate == dateString){
+                                    cell.addClass('pp-start');
+                                } else {
+                                    cell.addClass('pp-middle');
+                                }
+                            }
+
+                            // increment date
+                            dx++;
+                        }
+
+                        bodyRow.append(cell);
+
+                        // if there are 7 cells in the row, add the weekly total and pay period total cells
+                        if(j === 6){
+                            // add final column(s) to row (weekly total and pay period total)
+                            bodyRow.append(`<td class="week-total"></td>
+                                            <td class="pp-total">${ppTotalHtml}</td>`);
+                        }
+                    }
+
+                    tblBody.append(bodyRow);
+                }
+
+                tbl.append(tblHead);
+                tbl.append(tblBody);
+                calendarDiv.append(tbl);
+            }
+
+            function setUpDemoData(){
+                // define the time entries demo data object
+                let timeEntriesDemoData = {
+                        "2024-06-03": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "ppID": "id-1718138962937"
+                        },
+                        "2024-06-04": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962937"
+                        },
+                        "2024-06-05": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962937"
+                        },
+                        "2024-06-06": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962937"
+                        },
+                        "2024-06-07": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "ppID": "id-1718138962937"
+                        },
+                        "2024-06-10": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962938"
+                        },
+                        "2024-06-11": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962938"
+                        },
+                        "2024-06-12": {
+                            "startTime": "",
+                            "endTime": "",
+                            "breakDuration": "0",
+                            "dayTotal": "0",
+                            "ppID": "id-1718138962938"
+                        },
+                        "2024-06-13": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "ppID": "id-1718138962938"
+                            
+                        },
+                        "2024-06-14": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962938"
+                        },
+                        "2024-06-17": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962939"
+                        },
+                        "2024-06-18": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962939"
+                        },
+                        "2024-06-19": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962939"
+                        },
+                        "2024-06-20": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "30",
+                            "dayTotal": "7.50",
+                            "ppID": "id-1718138962939"
+                        },
+                        "2024-06-21": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962939"
+                        },
+                        "2024-06-22": {
+                            "startTime": "",
+                            "endTime": "",
+                            "breakDuration": "0",
+                            "dayTotal": "0",
+                            "ppID": "id-1718138962940"
+                        },
+                        "2024-06-23": {
+                            "startTime": "",
+                            "endTime": "",
+                            "breakDuration": "0",
+                            "dayTotal": "0",
+                            "ppID": "id-1718138962940"
+                        },
+                        "2024-06-24": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962940"
+                        },
+                        "2024-06-25": {
+                            "startTime": "08:00",
+                            "endTime": "16:00",
+                            "breakDuration": "0",
+                            "dayTotal": "8.00",
+                            "ppID": "id-1718138962940"
+                        },
+                        "2024-06-26": {
+                            "startTime": "",
+                            "endTime": "",
+                            "breakDuration": "0",
+                            "dayTotal": "0",
+                            "ppID": "id-1718138962940"
+                        },
+                        "2024-06-27": {
+                            "startTime": "",
+                            "endTime": "",
+                            "breakDuration": "0",
+                            "dayTotal": "0",
+                            "ppID": "id-1718138962940"
+                        },
+                        "2024-06-28": {
+                            "startTime": "",
+                            "endTime": "",
+                            "breakDuration": "0",
+                            "dayTotal": "0",
+                            "ppID": "id-1718138962940"
+                        }                        
+                };
+                // store the time entries demo data object in local storage
+                localStorage.setItem('timeEntries', JSON.stringify(timeEntriesDemoData));
+
+                // define the pay periods demo data object
+                let payPeriodsDemoData = {
+                    "id-1718138962937": {
+                        "startDate": "2024-06-03",
+                        "endDate": "2024-06-07",
+                        "total": 39.00
+                    },
+                    "id-1718138962938": {
+                        "startDate": "2024-06-10",
+                        "endDate": "2024-06-14",
+                        "total": 31.50
+                    },
+                    "id-1718138962939": {
+                        "startDate": "2024-06-17",
+                        "endDate": "2024-06-21",
+                        "total": 39.00
+                    },
+                    "id-1718138962940": {
+                        "startDate": "2024-06-22",
+                        "endDate": "2024-06-28",
+                        "total": 16.00
+                    }
+
+                };
+                // store the pay periods demo data object in local storage
+                localStorage.setItem('payPeriods', JSON.stringify(payPeriodsDemoData));
+
+                // reload page
+                location.reload();
+            }
+
+
+            /*
+                ****Pay period functionality:****
+                -have inputs for entering start and end dates for a new pay period
+                -have a button to submit the start and end dates
+                -have a function that calculates the pay period total based on the start and end dates (loop through dates in range and sum the day totals)
+                -have a function that styles the dates within the pay period (maybe add a class to the td elements)
+                -populate the pay period total cell with the total hours worked during the pay period
+                -to change the pay period click on the pay period total cell and modify the start and end dates
+            */
+
+            /*
+            //   // Function to create a table cell with a partial background and tabindex
+            //   function createTableCell(content, className) {
+            //       const td = document.createElement('td');
+            //       if (className) {
+            //         td.className = className;
+            //       }
+            //       td.textContent = content;
+            //       td.tabIndex = 0; // Make the td focusable
+            //       return td;
+            //     }
+
+            //     // Function to create a table row
+            //     function createTableRow(cells) {
+            //       const tr = document.createElement('tr');
+            //       cells.forEach(cell => tr.appendChild(cell));
+            //       return tr;
+            //     }
+            */
+
+
+
+
+    </script>
+
+
+</body>
+</html>
+
