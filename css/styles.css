@@ -358,7 +358,8 @@ td,
 th {
   border-color: inherit;
   border-style: solid;
-  border-wid'sth: 0;
+  border-width: 0;
+  /* border-width: 0.5px; */
 }
 
 label {
@@ -1780,7 +1781,14 @@ progress {
   margin-bottom: 1rem;
   color: var(--bs-table-color);
   vertical-align: top;
-  border-color: var(--bs-table-border-color);
+  /* border-color: var(--bs-table-border-color); */
+  border-color: var(--bs-border-color-translucent);
+  /* border-color: rgba(0, 0, 0, 0.1); */
+  /* border-color: var(--bs-body-bg); */
+  /* border-color: red; */
+  /* border-width: 3px; */
+  /* border-width: 0.01px !important; */
+
 }
 .table > :not(caption) > * > * {
   padding: 0.5rem 0.5rem;
@@ -11102,6 +11110,10 @@ html {
 }
 
 /* ***************************** */
+/* ***************************** */
+/* ***************************** */
+/* ***************************** */
+
 /* ADDITIONS */
 .skills-list {
   display: flex;
@@ -11129,16 +11141,24 @@ a.disabled {
 }
 
 /* calendar stuff */
+
+
+.border-muted {
+  /* border: 0.5px dashed green; */
+  /* border: 0.05px solid var(--bs-table-border-color); */
+}
+
 table.calendar > td {
-  /* border: 1px solid black; */
+    /* border: 0.05px solid var(--bs-table-border-color) !important; */
+    /* border: 0.05px solid red !important; */
+  /* border-color: rgba(255, 255, 255, 0.075) !important; */
+  /* border-width: 0 !important; */
+  /* border-width: 0.125rem !important; */
   /* width: 50px;
   height: 50px; */
-
   padding: 10px;
-  
   position: relative; 
   /* Ensure the pseudo-element is positioned relative to the td */
-  
   overflow: hidden; 
   /* Ensure the pseudo-element doesn't overflow the td */
 }
@@ -11166,27 +11186,51 @@ td.pp-end{
   border-bottom-right-radius: 2rem;
 }
 
-.cal-day {
+td.cal-day {
   width: 100px;
   height: 100px;
+  border: 0.5px solid var(--bs-border-color-translucent);
 }
 
-
-
-.cal-day:hover {
+td.cal-day:hover {
   background-color: var(--bs-light);
   color: #563856;
 }
 
-.wk-total {
-  width: 50px;
-}
-
-.pp-total {
+th.dow{
   background-color: var(--bs-white)!important; 
-  border-color: var(--bs-table-border-color)!important;
+  /* border-color: var(--bs-table-border-color)!important; */
+  border: 0;
   width: 100px;
 }
+
+th.pp-total, td.pp-total {
+  background-color: var(--bs-white)!important; 
+  /* border-color: var(--bs-table-border-color)!important; */
+  border-right: 0;
+  border-bottom: 0.5px solid var(--bs-border-color-translucent);
+  width: 100px;
+}
+
+.pp-amt {
+  text-align: left;
+  margin-top: 30px;
+}
+
+.date-num {
+  text-align: right !important;
+  /* text-align: end !important; */
+  /* position: absolute; */
+  top: 10px;
+  bottom: 10px;
+  font-weight: bold;
+}
+
+.te-amt {
+  text-align: left;
+  margin-top: 30px;
+}
+
 
 /* experimental: variable sizes for calendar td's based on device screen size */
 /* @media (min-width: 1200px) {
@@ -11269,9 +11313,11 @@ td.pp-end{
   background-color: #ffffff;
   padding: 16px;
   border-radius: 0.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  /* border: 1px solid rgba(0, 0, 0, 0.05); */
   margin: 10px;
   box-shadow: 0.25rem 0.25rem 1.5rem rgba(0, 0, 0, 0.12)!important;
+  /* box-shadow: 0px 8px 24px rgba(149, 157, 165, 0.2); */
+  /* box-shadow: 0px 7px 29px 0px rgba(100, 100, 111, 0.2); */
 }
 
 

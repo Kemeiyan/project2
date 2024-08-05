@@ -37,7 +37,7 @@
             <!-- decide if we want add pay period button above or below the calendar -->
             <!-- <button type="button" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button> -->
         </div>
-        <div>
+        <div class="mx-3">
             <button type="button" id="loadDemoData" class="loadDemoData btn btn-outline-info"><i class="fa fa-snowplow me-1"></i>Load demo data</button>
             <button type="button" id="clearLocalData" class="clearLocalData btn btn-outline-danger"><i class="fa fa-triangle-exclamation me-1"></i>Clear all data</button>
         </div>
@@ -59,11 +59,13 @@
                 <div class="mb-2">
                     <label for="breakDuration">Break</label>
                     <input type="number" name="breakDuration" id="breakDuration" class="form-control form-control-sm timeInp" placeholder="0">
+                    <div class="form-text">minutes</div>
                 </div>
                 <div class="mb-2">
                     <!-- might be abkle to use form-control-static to display plain text here for the calculated day total instead of having an input that you need to disable...then again, we do want to save the day total when we submit the form, but this is still technically an input, so it might actually work... -->
                     <label for="dayTotal">Total</label>
                     <input type="number" name="dayTotal" class="form-control form-control-sm disabled" placeholder="0" readOnly>
+                    <div class="form-text">hours</div>
                 </div>
                 <div class="d-flex justify-content-between mt-3">
                     <div>
@@ -82,7 +84,7 @@
         <!-- calendar goes here -->
     </div>
 
-    <div>
+    <div class="mx-3">
         <button type="button" id="addPayPeriod" class="addPayPeriod btn btn-outline-primary"><i class="fa fa-plus me-1"></i>Add pay period</button>
     </div>
 
@@ -203,6 +205,7 @@ function loopPpDateRange_v2(ppID){
     loop through the dates in the range and sum the day totals
     populate the pay period total cell with the total hours worked during the pay period
     */
+   // *** this one is used when we're updating a time entry record and need to update the pay period total
   
     // get pay period data from object
     let payPeriodData = AppData.payPeriodData;
@@ -278,7 +281,7 @@ function loopPpDateRange(ppID, startString='', endString=''){
     populate the pay period total cell with the total hours worked during the pay period
     */
   
-    
+    console.log({ppID});
   // move outside of function so we can use the looping in multiple locations?????...maybe cancel that thought...
     // get pay period data from object
     let payPeriodData = AppData.payPeriodData;
@@ -287,6 +290,8 @@ function loopPpDateRange(ppID, startString='', endString=''){
         // if pay period validation fails, exit the function
         console.warn("pay period form validation failed!");
         return;
+    }else{
+        console.log("pay period form validation passed!");
     }
     
     // get daily time entries from object
@@ -386,7 +391,7 @@ function loopPpDateRange(ppID, startString='', endString=''){
     }
 
     // style the dates within the pay period...just reload the entire calendar, since we're going to be styling stuff when we build the calendar anyway
-    location.reload();
+    location.reload(); // KEEP ME! just commented out while testing....are we using this function when we initialize the data as well? ...if so, we probably don't need to reload the page again
 }
 
 // delete a single pay period record from local storage
@@ -449,6 +454,15 @@ function clearTimeEntryRec(dateString){
     }
 }
 
+function toggleDisabled(selector, disable=true){
+    // pass in selector (distinguishes id vs class)
+    let btn = $(selector);
+    btn.removeClass('disabled');
+    if(disable == true){
+        btn.addClass('disabled');
+    }
+    
+}
 
 // // Initialize data on application load
 // initializeData();
@@ -463,7 +477,6 @@ function clearTimeEntryRec(dateString){
                 buildCalendar();
             })
 
-
             // delete time entry record
             $(document).on('click', '#delTimeEntry', function(){
                 console.log("Delete time entry button clicked!");
@@ -475,7 +488,6 @@ function clearTimeEntryRec(dateString){
                 // clear time entry record: clear out start time, end time, break duration, and day total
                 //  also updates pay period total if day is within existing pay period
                 clearTimeEntryRec(dateString);
-
                 console.log("outside of clearTimeEntry!");
 
                 // reload page (since we're styling the calendar based on pay period data)
@@ -486,6 +498,11 @@ function clearTimeEntryRec(dateString){
             // delete pay period record
             $(document).on('click', '#delPayPeriod', function(){
                 console.log("Delete pay period button clicked!");
+
+                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                // *** TO DO: also need to disable delete pay period button if this is a new pay period
+
+
                     // let delBf = btnFlare($(this));
                     // delBf.confirm();
                     // return;
@@ -527,7 +544,9 @@ function clearTimeEntryRec(dateString){
             // load demo data into local storage
             $(document).on('click', '#loadDemoData', function(){
                 console.log("Load demo data button clicked!");
-                setUpDemoData();
+                // manually pass in current month for now...later switch to calculating it inside the set up demo data function...
+                let month = "08";
+                setUpDemoData(month);
                 // see if setup worked
                 // let teData = AppData.timeEntryData; // just for testing
                 // console.log({teData});
@@ -550,6 +569,7 @@ function clearTimeEntryRec(dateString){
                 // make sure form is empty and validation reset since this btn is for adding new pay periods
                 resetInvalidForm($('#payPeriodForm'));
                 resetForm($('#payPeriodForm'));
+                toggleDisabled('#delPayPeriod');
             })
 
             $(document).on('click', '#savePayPeriod', function(){
@@ -572,36 +592,58 @@ function clearTimeEntryRec(dateString){
 
             $(document).on('click', 'td:not(:last-child)', function(){
             // $(document).on('click', 'td:not(:nth-last-child(-n+2))', function(){
-                // add selected class to clicked cell
-                $(this).addClass('selected');
-                // remove selected class from other cells
-                $('td').not(this).removeClass('selected');
-                // reset form
-                resetInvalidForm($('#timeEntryForm'));
-                console.log("Clicked on a day!");       
-                // get date from clicked cell
-                let dateString = $(this).data('date');
-                console.log({dateString});
-                // store date in save button (or maybe somewhere better?)
-                $('#timeEntryDate').val(dateString);
-                // get any existing time entry data from local storage
-                let timeEntryData = AppData.timeEntryData;
-                let dayData = timeEntryData[dateString] ? timeEntryData[dateString] : {startTime: '', endTime: '', breakDuration: 0};
-                // show form
-                $('.te-form-container').addClass('unhidden').removeClass('hidden');
-                
-            // put date in form title for clarity (format date)
-            // format date manually for now but think about using a library like date-fns or moment.js
-                let formattedDate = usDateFormat(dateString);
-                console.log({formattedDate});
-            // // //
 
-                $('.te-form-container .card-title').text(`Time Entry for ${formattedDate}`);
-                // populate form with existing data
-                $('input[name="startTime"]').val(dayData.startTime);
-                $('input[name="endTime"]').val(dayData.endTime);
-                $('input[name="breakDuration"]').val(dayData.breakDuration);
-                $('input[name="dayTotal"]').val(dayData.dayTotal);                       
+// !!!!!!!!!!!!!!!!!!!!!!!!!
+// *** maybe TO DO: unselect td if clicked on after already selected?????
+
+                if($(this).hasClass('selected')){
+                    $(this).removeClass('selected');
+                    $('.te-form-container').addClass('hidden').removeClass('unhidden'); // KEEP ME! just commented out while testing
+                }else{
+
+                    // add selected class to clicked cell
+                    $(this).addClass('selected');
+                    // remove selected class from other cells
+                    $('td').not(this).removeClass('selected');
+                    // reset form
+                    resetInvalidForm($('#timeEntryForm'));
+                    console.log("Clicked on a day!");  
+                    // re-enable delete time entry button
+                    $('#delTimeEntry').removeClass('disabled');
+                    
+                    // get date from clicked cell
+                    let dateString = $(this).data('date');
+                    console.log({dateString});
+                    // store date in save button (or maybe somewhere better?)
+                    $('#timeEntryDate').val(dateString);
+                    // get any existing time entry data from local storage
+                    let timeEntryData = AppData.timeEntryData;
+                    let dayData = timeEntryData[dateString] ? timeEntryData[dateString] : {startTime: '', endTime: '', breakDuration: 0};
+                
+                // if no start time and no end time saved, disable the delete time entry button...otherwise, make sure it is enabled
+                    //  note: this seems to be the best way to check for existing time entry records with actual time entry data (validation requires both start and end times before saving, but allow clearing if either exists as a backup for cleaning up anything that gets broken)
+                    //      (could have a time entry rec if part of a pay period but no time entry info has been entered yet
+                    //          ...don't need option to delete time entry rec in this case
+                    //          ...plus we're not actually 'deleting' a rec, we're just 'clearing' the time entry info (and leaving any pay period related info to enable easier styling of calendar))
+                    if(dayData.startTime == '' && dayData.endTime == ''){
+                        $('#delTimeEntry').addClass('disabled');
+                    }
+                    // show form
+                    $('.te-form-container').addClass('unhidden').removeClass('hidden');
+                    
+                    // put formatted date in form title for clarity
+                    //  ***format date manually for now, but think about using a library like date-fns or moment.js
+                    let formattedDate = usDateFormat(dateString);
+                    console.log({formattedDate}); // // //
+                    $('.te-form-container .card-title').text(`Time Entry for ${formattedDate}`);
+                    // populate form with any existing data
+                    $('input[name="startTime"]').val(dayData.startTime);
+                    $('input[name="endTime"]').val(dayData.endTime);
+                    $('input[name="breakDuration"]').val(dayData.breakDuration);
+                    $('input[name="dayTotal"]').val(dayData.dayTotal);
+                    
+                }               
+                
             })
 
             $(document).on('click', '.dismissForm', function(){
@@ -654,7 +696,7 @@ function clearTimeEntryRec(dateString){
 
             // Hide the form and update the day summary
                 // hide form
-                // $('.te-form-container').addClass('hidden').removeClass('unhidden'); // KEEP ME! just commented out while testing
+                $('.te-form-container').addClass('hidden').removeClass('unhidden'); // KEEP ME! just commented out while testing
 
                 // find timeEntryCont div by date on td
                 let tsCont = $(`td[data-date="${dateString}"] .timeEntryCont`);
@@ -668,6 +710,7 @@ function clearTimeEntryRec(dateString){
                 let ppID = dayIsInPayPeriod(dateString);
                 if(ppID){
                     loopPpDateRange_v2(ppID);
+                    
                     // need to reload entire calendar??? 
                     // location.reload();
 
@@ -686,12 +729,10 @@ function clearTimeEntryRec(dateString){
                     }
                     // let ppLink = $(`a .ppTotalLink`);
                     console.log(ppLink);
-
                     
                 }else{ 
-                    console.log('date is NOT within existing pay period!');
+                    console.log('date is NOT within an existing pay period!');
                 }
-
 
             });
 
@@ -701,6 +742,8 @@ function clearTimeEntryRec(dateString){
                 $('.pp-form-container').addClass('unhidden').removeClass('hidden');
                 // reset form
                 resetInvalidForm($('#payPeriodForm'));
+                // make sure delete pay period button is re-enabled
+                toggleDisabled('#delPayPeriod', false);
 
                 // get pay period data from local storage
                 let payPeriodData = getStoredPayPeriodData();
@@ -734,6 +777,56 @@ function clearTimeEntryRec(dateString){
                 console.log({changedInput});
                 console.log(changedInput);
                 refreshDayTotal($(this));
+            })
+
+
+            $(document).on('click', '.changeMonth', function(){
+                console.log("move between month button clicked!");
+                // find out which direction we're moving from btn id
+                let btnId = $(this).attr('id');
+                console.log({btnId});
+
+                // get the currently displayed month from the calendar
+                let displayMonth = $('#myCalendar').data('month');
+                console.log({displayMonth});
+                let displayYear = $('#myCalendar').data('year');
+                console.log({displayYear});
+
+                if (btnId == 'nextMonth') {
+                    // increment month
+                    displayMonth++;
+                    console.log({displayMonth});
+
+                    // if currently displayed month is December, increment year and reset month to January
+                    // (we're using 0-11 for months, so December is 11)
+                    if(displayMonth > 11){
+                        displayMonth = 0;
+                        displayYear++;
+                    }
+                } else {
+                    // decrement month
+                    displayMonth--;
+                    console.log({displayMonth});
+
+                    // if currently displayed month is January, decrement year and reset month to December
+                    // (we're using 0-11 for months, so January is 0) 
+                    if(displayMonth < 0){
+                        displayMonth = 11;
+                        displayYear--;
+                    }
+                }
+
+                // January is 0, December is 11
+                if((displayMonth < 0 || displayMonth > 11) || (displayYear < 1900 || displayYear > 2100)){
+                    console.log("Invalid month/year value!");
+                    return;
+                }else{
+                    // clear out existing calendar from container
+                    $('.calendarContainer').empty();
+                    // reload calendar with new month
+                    buildCalendar(displayMonth, displayYear);
+                }
+
             })
 
 /* 
@@ -789,6 +882,9 @@ function clearTimeEntryRec(dateString){
                     total.val(totalTimeWorked);
                 }
             }
+
+
+
 
         /* form validation functions */
             // function to add/remove invalid feedback styling for a single input
@@ -867,13 +963,29 @@ function clearTimeEntryRec(dateString){
 
             // make sure pay period complies with rules before saving
             function payPeriodValidation(ppID, startString, endString, payPeriodData){
+
+                if(startString == '2024-07-28'){
+                    console.log('start string is July 28th!');
+                    console.log({startString});
+                    if(typeof startString == 'string'){
+                        console.log('start string is a string!');
+                    }else{
+                        console.log('start string is NOT a string!');
+                    }
+
+                }
                 // check to make sure start/end dates are not empty
                 if(!ppCheckEmptyInputs(startString, endString)){
+                    console.log('empty inputs!');
                     return false;
                 }
 
                 // check to make sure start date is before end date
                 if(startString >= endString){
+                    console.log({startString});
+                    console.log({endString});
+                    
+                    console.log('start date is after end date!');
                     invalidInput($('#ppStartDate'), true, 'Start date must be before end date!');
                     return false;
                 }
@@ -944,42 +1056,75 @@ function clearTimeEntryRec(dateString){
                 return payPeriodData ? JSON.parse(payPeriodData) : {};
             }
 
-            // Function to build the calendar
-            function buildCalendar(){
-                console.log('building the calendar!');
 
-                // set values of current day/month/year
+            // get values for current day, month, and year
+            function getCurrentDate(){
                 let today = new Date();
                 let currentMonth = today.getMonth();
                 let currentYear = today.getFullYear();
-                // console.log({today});
-                // console.log({currentMonth});
-                // console.log({currentYear});
+                let currentDay = today.getDate();
+                return {currentMonth, currentYear, currentDay};
+            }
+
+            // Function to build the calendar
+            function buildCalendar(month=false, year=false){
+                // ***probably dont need to pass in display day because if we're looking at a different month, we don't need to know the day
+                console.log('building the calendar!');
+
+                let displayMonth;
+                let displayYear;
+                if(month === false || year === false){
+                    // get values of current day/month/year if month/year not passed in
+                    let currentDate = getCurrentDate();
+                    console.log({currentDate});
+                    displayMonth = currentDate.currentMonth;
+                    displayYear = currentDate.currentYear;
+                    // let displayDay = currentDate.currentDay; // ***might not need this, unless we want to highlight the current day
+                }else{
+                    // use passed in month/year
+                    displayMonth = month;
+                    displayYear = year;
+                }
+                console.log({displayMonth});
+                console.log({displayYear});
 
                 // set calendar container
                 let calendarDiv = $(".calendarContainer");
 
+                // set up buttons to move between months
+                let prevMonth = $('<div class=""><button id="prevMonth" class="changeMonth btn"><i class="fa fa-angle-left fa-lg"></i></button></div>');
+                let nextMonth = $('<div class=""><button id="nextMonth" class="changeMonth btn"><i class="fa fa-angle-right fa-lg"></i></button></div>');
                 // set up calendar title
                 let monthNames = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
-                let calendarTitle = $('<div class="calendar-title text-center"></div>').text(`${monthNames[currentMonth]} ${currentYear}`);
-                calendarDiv.append(calendarTitle);
+                let calendarTitle = $('<div class="calendar-title mx-3"></div>').text(`${monthNames[displayMonth]} ${displayYear}`);
+               
+                // append calendar title and buttons to calendar container
+                let calendarHead = $('<div class="calendar-head d-flex justify-content-center align-items-center"></div>');
+                calendarHead.append(prevMonth);
+                calendarHead.append(calendarTitle);
+                calendarHead.append(nextMonth);
+
+                calendarDiv.append(calendarHead);'s'
 
                 // set up calendar table
-                let daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-                let firstDayInMonth = new Date(currentYear, currentMonth, 1).getDay();
+                let daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+                let firstDayInMonth = new Date(displayYear, displayMonth, 1).getDay();
                 // console.log({daysInMonth});                
                 // console.log({firstDayInMonth});
-                let tbl = $('<table class="calendar table table-cell-hover table-cell-focus" id="myCalendar"></table>');
+                let tbl = $(`<table class="calendar table table-cell-hover table-cell-focus border-muted" id="myCalendar" data-month="${displayMonth}" data-year="${displayYear}"></table>`);
                 let tblHead = $('<thead></thead>');
                 let tblBody = $('<tbody></tbody>');
                 
                 // set up table header
-                let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat','Pay Period Total'];
-                let headerRow = $('<tr></tr>');
+                // let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat','Pay Period Total'];
+                let daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                let headerRow = $('<tr class="text-center"></tr>');
                 $.each(daysOfWeek, (i, v) => {
-                    let th = $('<th></th>').text(v);
+                    let th = $('<th class="dow"></th>').text(v);
                     headerRow.append(th);
                 })
+                headerRow.append($('<th class="pp-total"></th>').text('Pay Period Total'));
+
                 tblHead.append(headerRow);
                 
                 // get stored pay period data so we can populate the calendar with pay period totals and style the pay period dates
@@ -994,19 +1139,24 @@ function clearTimeEntryRec(dateString){
 
                     for (let j = 0; j < 7; j++) {
                         // console.log("j is: " + j);
-                        let dateString = `${currentYear}-${padToTwoDigits(currentMonth + 1)}-${padToTwoDigits(dx)}`;
-                        // console.log({dateString});
+                        let dateString = `${displayYear}-${padToTwoDigits(displayMonth + 1)}-${padToTwoDigits(dx)}`;
+                        
+                        if(dateString == '2024-08-06'){
+                            console.log("this is the day!");
+                            console.log({dateString});
+                        }
                         let weekNum = getCalendarWeekNumber(new Date(dateString));                
                         let cell = $(`<td class="cal-day" data-date="${dateString}"></td>`);
                         if (i === 0 && j < firstDayInMonth) {
                             cell.text('');
                         } else if (dx <= daysInMonth) {
                             cell.dayDate = dx;
-                            cell.html(`<div class="fw-bold">${dx}</div>
-                                        <div class="timeEntryCont"></div>`);
+                            cell.html(`<div class="date-num">${dx}</div>
+                                        <div class="te-amt timeEntryCont"></div>`);
                             let timeEntryData = AppData.timeEntryData;
                             // console.log({timeEntryData});
 
+                            if(dateString == '2024-08-06'){ console.log({timeEntryData}); }
                             // if there is no data for this day, create a new object with default values
                             let dayData;
                             if(timeEntryData[dateString]){ 
@@ -1084,7 +1234,7 @@ function clearTimeEntryRec(dateString){
       
 
 
-                        // function getFormattedDateString(dateObj) {
+            // function getFormattedDateString(dateObj) {
             //     // const date = new Date();
 
             //     let day = String(dateObj.getDate()).padStart(2, '0');
@@ -1111,188 +1261,6 @@ function clearTimeEntryRec(dateString){
             //     // Calculate the week number
             //     return Math.floor(daysBetween / 7) + 1;
             // }
-
-            /*
-                ****Pay period functionality:****
-                -have inputs for entering start and end dates for a new pay period
-                -have a button to submit the start and end dates
-                -have a function that calculates the pay period total based on the start and end dates (loop through dates in range and sum the day totals)
-                -have a function that styles the dates within the pay period (maybe add a class to the td elements)
-                -populate the pay period total cell with the total hours worked during the pay period
-                -to change the pay period click on the pay period total cell and modify the start and end dates
-            */
-
-            /*
-            //   // Function to create a table cell with a partial background and tabindex
-            //   function createTableCell(content, className) {
-            //       const td = document.createElement('td');
-            //       if (className) {
-            //         td.className = className;
-            //       }
-            //       td.textContent = content;
-            //       td.tabIndex = 0; // Make the td focusable
-            //       return td;
-            //     }
-
-            //     // Function to create a table row
-            //     function createTableRow(cells) {
-            //       const tr = document.createElement('tr');
-            //       cells.forEach(cell => tr.appendChild(cell));
-            //       return tr;
-            //     }
-            */
-
-
-///////////////////////////////////////////////////////
-
-           // // save data to local storage....OLD VERSION...
-            // function saveDayData(date, data){
-            //     var timeEntryData = getStoredDayData();
-            //     timeEntryData[date] = data;
-            //     console.log({timeEntryData});
-            //     localStorage.setItem('timeEntries', JSON.stringify(timeEntryData));
-            // }
-
-            // // update the pay period total, ...OLD VERSION...
-            // // used when saving pay period via form when increment is true (looping through all days within pay period and adding up totals for the day to replace existing value (if any) 
-            // // also used when clearing a time entry record (just subtracting the total hours for the day we're clearing from the total for the pay period)
-            // // 
-            // function updatePayPeriodTotal(ppID, dateString, increment=true){
-            //     let timeEntryData = getStoredDayData();
-            //     let payPeriodData = getStoredPayPeriodData();
-
-            //     if(payPeriodData[ppID] && timeEntryData[dateString]){
-            //         let dayData = timeEntryData[dateString];
-            //         let dayTotal = parseFloat(dayData.dayTotal);
-            //         if(increment){
-            //             payPeriodData[ppID].total += dayTotal;
-            //         }else{
-            //             payPeriodData[ppID].total -= dayTotal;
-            //         }
-
-            //     }
-            // }
-
-            // OLD VERSION of save pay period data....maybe split out function to have one function to loop through and calculate and have one function to just do the data saving step
-            // // function to loop through a date range 
-            // // so that we can calculate the pay period total for the date range 
-            // // and also style the dates within the pay period
-            // function savePayPeriodData(ppID, startString='', endString=''){
-            //     /*
-            //     calculate the total hours worked during the pay period
-            //     loop through the dates in the range and sum the day totals
-            //     style the dates within the pay period
-            //     populate the pay period total cell with the total hours worked during the pay period
-            //     */
-                    
-            //     // get pay period data from local storage
-            //     let payPeriodData = getStoredPayPeriodData();
-
-            //     // pay period validation
-            //     if(!payPeriodValidation(ppID, startString, endString, payPeriodData)){
-            //         // if pay period validation fails, exit the function 
-            //         return;
-            //     }
-                
-            //     // get daily time entries from local storage
-            //     let timeEntryData = getStoredDayData();
-            //     const start = new Date(startString);
-            //     const end = new Date(endString);
-            //     let loopDate = new Date(start);
-            //     let ppTotal = 0; // initialize pay period total
-
-            //     // if this is a new pay period, generate a unique id
-            //     if(!ppID){
-            //         ppID = generateUniqueId();
-            //         console.log("New pay period ID: " + ppID);
-            //     }
-
-                
-
-            //     // loop through the dates in the range
-            //     // overview: get total hours worked for the day then add to total for pay period,
-            //     //           also, determine location of date within pay period and update day data object with pay period info
-            //     while(loopDate <= end){
-            //         console.log({loopDate});
-            //         // convert loopDate to string
-            //         let loopDateString = loopDate.toISOString().split('T')[0];
-
-            //         // if there is no data for this day, create a new object with default values
-            //         let dayData;
-            //         if(timeEntryData[loopDateString]){ 
-            //             dayData = timeEntryData[loopDateString];
-            //         } else { 
-            //             dayData = {
-            //                 startTime: '', 
-            //                 endTime: '', 
-            //                 breakDuration: 0, 
-            //                 dayTotal: 0
-            //             };
-            //         }
-            //         console.log({dayData});
-
-            //         // add total hours from this day to total for pay period
-            //         if(dayData.dayTotal){
-            //             ppTotal = ppTotal + parseFloat(dayData.dayTotal);
-            //             console.log({ppTotal});
-            //         }
-
-            //         // determine location of date within pay period (start, end, middle)
-            //         let ppPosition;
-            //         if(loopDateString == startString){
-            //             ppPosition = 'start';
-            //         } else if(loopDateString == endString){
-            //             ppPosition = 'end';
-            //         } else {
-            //             ppPosition = 'middle';
-            //         }
-            //         // update the day data object with pay period info
-            //         saveDayData(loopDateString, {
-            //             ...dayData, 
-            //             ppID: ppID,
-            //             ppPosition: ppPosition, 
-            //             ppStartDate: startString, 
-            //             ppEndDate: endString
-            //         });
-
-            //         // increment the date
-            //         // let newDate = loopDate.setDate(loopDate.getDate() + 1);
-            //         // loopDate = new Date(newDate);
-            //         loopDate.setDate(loopDate.getDate() + 1);         
-            //     } // END loop
-
-            //     // save pay period data (saving the total hours worked during the pay period)
-            //     payPeriodData[ppID] = {
-            //         startDate: startString,
-            //         endDate: endString,
-            //         total: ppTotal
-            //     }
-            //     console.log({payPeriodData});
-
-            //     // update pay period info in daily records that are not in this new pay period (but were in the old pay period)
-            //     for (const [date, dayData] of Object.entries(timeEntryData)) {
-            //         let dayDate = new Date(date);
-
-            //         if(dayData.ppID == ppID && (dayDate < start || dayDate > end)){
-            //             console.log("Updating pay period info for daily records that are not in new pay period");
-            //             saveDayData(date, {...dayData, 
-            //                                 ppID: '',
-            //                                 ppPosition: '', 
-            //                                 ppStartDate: '', 
-            //                                 ppEndDate: ''
-            //                             })
-            //         }
-            //     }
-
-            //     // save ppTotal to local storage
-            //     localStorage.setItem('payPeriods', JSON.stringify(payPeriodData));
-
-            //     // style the dates within the pay period...or maybe reload the calendar??? since we're going to be styling stuff when we build the calendar anyway
-            //     location.reload();
-            // }
-
-
-
 
     </script>
 

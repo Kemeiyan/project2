@@ -185,228 +185,227 @@ function btnFlare(btnObj){
 }
 
 // demo data
-function setUpDemoData(){
+function setUpDemoData(month=false){
+    let currentYear = new Date().getFullYear();
+
+    // option to manaually pass in month, otherwise uses current month
+    let currentMonth;
+    if(month === false){
+        currentMonth = new Date().getMonth();
+    }else{
+        currentMonth = month;
+    }
+
+    // prep to set up some demo data for the previous month as well
+    let lastMonth;
+    let lastMonthYear;
+    // if we're just setting up demo data for the past...which would make sense...we just need to check if we're in January
+    // (we're using 0-11 for months, so January is 0 and December is 11) 
+    if(currentMonth === 0){
+        lastMonth = 11;
+        lastMonthYear--;
+    }else{
+        lastMonth = padToTwoDigits(currentMonth - 1);
+        lastMonthYear = currentYear;
+    }
+    
+    console.log({lastMonth});
+    console.log({lastMonthYear});
+
     // define the time entries demo data object
     let timeEntriesDemoData = {
-            "2024-07-02": {
+            [`${lastMonthYear}-${lastMonth}-28`]: {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "45",
+                "dayTotal": "7.25"
+            },
+            [`${currentYear}-${currentMonth}-02`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "30",
-                "dayTotal": "7.50",
-                // "ppID": "id-1718138962937"
+                "dayTotal": "7.50"
             },
-            "2024-07-03": {
+            [`${currentYear}-${currentMonth}-03`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962937"
+                "dayTotal": "8.00"
             },
-            "2024-07-04": {
+            [`${currentYear}-${currentMonth}-04`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962937"
+                "dayTotal": "8.00"
             },
-            "2024-07-05": {
+            [`${currentYear}-${currentMonth}-05`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962937"
+                "dayTotal": "8.00"
             },
-            "2024-07-06": {
+            [`${currentYear}-${currentMonth}-06`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962937"
+                "dayTotal": "8.00"
             },
-            "2024-07-09": {
+            [`${currentYear}-${currentMonth}-09`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "30",
-                "dayTotal": "7.50",
-                // "ppID": "id-1718138962938"
+                "dayTotal": "7.50"
             },
-            "2024-07-10": {
+            [`${currentYear}-${currentMonth}-10`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962938"
+                "dayTotal": "8.00"
             },
-            "2024-07-11": {
+            [`${currentYear}-${currentMonth}-11`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962938"
+                "dayTotal": "8.00"
             },
-            "2024-07-12": {
-                "startTime": "",
-                "endTime": "",
+            [`${currentYear}-${currentMonth}-12`]: {
+                "startTime": "8:00",
+                "endTime": "12:00",
                 "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962938"
+                "dayTotal": "4.00"
             },
-            "2024-07-13": {
+            [`${currentYear}-${currentMonth}-13`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "30",
-                "dayTotal": "7.50",
-                // "ppID": "id-1718138962938"
-                
+                "dayTotal": "7.50"
             },
-            "2024-07-16": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962939"
+            [`${currentYear}-${currentMonth}-14`]: {
+                "startTime": "",
+                "endTime": "",
+                "breakDuration": "30",
+                "dayTotal": "0"
             },
-            "2024-07-17": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962939"
-            },
-            "2024-07-18": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962939"
-            },
-            "2024-07-19": {
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962939"
-            },
-            "2024-07-20": {
+            [`${currentYear}-${currentMonth}-15`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "30",
-                "dayTotal": "7.50",
-                // "ppID": "id-1718138962939"
+                "dayTotal": "7.50"
             },
-            "2024-07-21": {
+            [`${currentYear}-${currentMonth}-16`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962939"
+                "dayTotal": "8.00"
             },
-            "2024-07-22": {
-                "startTime": "",
-                "endTime": "",
-                "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962939"
-            },
-            "2024-07-23": {
-                "startTime": "",
-                "endTime": "",
-                "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962940"
-            },
-            "2024-07-24": {
+            [`${currentYear}-${currentMonth}-17`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962940"
+                "dayTotal": "8.00"
             },
-            "2024-07-25": {
+            [`${currentYear}-${currentMonth}-18`]: {
                 "startTime": "08:00",
                 "endTime": "16:00",
                 "breakDuration": "0",
-                "dayTotal": "8.00",
-                // "ppID": "id-1718138962940"
+                "dayTotal": "8.00"
             },
-            "2024-07-26": {
+            [`${currentYear}-${currentMonth}-19`]: {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00"
+            },
+            [`${currentYear}-${currentMonth}-20`]: {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "30",
+                "dayTotal": "7.50"
+            },
+            [`${currentYear}-${currentMonth}-21`]: {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00"
+            },
+            [`${currentYear}-${currentMonth}-22`]: {
                 "startTime": "",
                 "endTime": "",
                 "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962940"
+                "dayTotal": "0"
             },
-            "2024-07-27": {
+            [`${currentYear}-${currentMonth}-23`]: {
                 "startTime": "",
                 "endTime": "",
                 "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962940"
+                "dayTotal": "0"
             },
-            "2024-07-28": {
+            [`${currentYear}-${currentMonth}-24`]: {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00"
+            },
+            [`${currentYear}-${currentMonth}-25`]: {
+                "startTime": "08:00",
+                "endTime": "16:00",
+                "breakDuration": "0",
+                "dayTotal": "8.00"
+            },
+            [`${currentYear}-${currentMonth}-26`]: {
                 "startTime": "",
                 "endTime": "",
                 "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962940"
+                "dayTotal": "0"
             },
-            "2024-07-29": {
+            [`${currentYear}-${currentMonth}-27`]: {
                 "startTime": "",
                 "endTime": "",
                 "breakDuration": "0",
-                "dayTotal": "0",
-                // "ppID": "id-1718138962940"
+                "dayTotal": "0"
+            },
+            [`${currentYear}-${currentMonth}-28`]: {
+                "startTime": "",
+                "endTime": "",
+                "breakDuration": "0",
+                "dayTotal": "0"
+            },
+            [`${currentYear}-${currentMonth}-29`]: {
+                "startTime": "",
+                "endTime": "",
+                "breakDuration": "0",
+                "dayTotal": "0"
             }                                      
     };
     // store the time entries demo data object in local storage
     localStorage.setItem('timeEntries', JSON.stringify(timeEntriesDemoData));
-
-   
-
-    // define the pay periods demo data object
-    // let payPeriodsDemoData = {
-    //     "id-1718138962937": {
-    //         "startDate": "2024-07-02",
-    //         "endDate": "2024-07-06",
-    //         "total": 39.00
-    //     },
-    //     "id-1718138962938": {
-    //         "startDate": "2024-07-09",
-    //         "endDate": "2024-07-13",
-    //         "total": 31.50
-    //     },
-    //     "id-1718138962939": {
-    //         "startDate": "2024-07-16",
-    //         "endDate": "2024-07-22",
-    //         "total": 39.00
-    //     },
-    //     "id-1718138962940": {
-    //         "startDate": "2024-07-23",
-    //         "endDate": "2024-07-29",
-    //         "total": 16.00
-    //     }
-
-        let payPeriodsDemoData = {
-            "id-1718138962937": {
-                "startDate": "2024-07-02",
-                "endDate": "2024-07-06",
-                "total": 0
-            },
-            "id-1718138962938": {
-                "startDate": "2024-07-09",
-                "endDate": "2024-07-13",
-                "total": 0
-            },
-            "id-1718138962939": {
-                "startDate": "2024-07-16",
-                "endDate": "2024-07-22",
-                "total": 0
-            },
-            "id-1718138962940": {
-                "startDate": "2024-07-23",
-                "endDate": "2024-07-29",
-                "total": 0
-            }
+    // let lastMonth = month - 1;
+    let payPeriodsDemoData = {
+        "id-1718138962936": {
+            "startDate": `${lastMonthYear}-${lastMonth}-28`,
+            "endDate": `${currentYear}-${currentMonth}-07`,
+            "total": 0
+        },
+        "id-1718138962937": {
+            "startDate": `${currentYear}-${currentMonth}-08`,
+            "endDate": `${currentYear}-${currentMonth}-12`,
+            "total": 0
+        },
+        "id-1718138962938": {
+            "startDate": `${currentYear}-${currentMonth}-13`,
+            "endDate": `${currentYear}-${currentMonth}-17`,
+            "total": 0
+        },
+        "id-1718138962939": {
+            "startDate": `${currentYear}-${currentMonth}-18`,
+            "endDate": `${currentYear}-${currentMonth}-24`,
+            "total": 0
+        },
+        "id-1718138962940": {
+            "startDate": `${currentYear}-${currentMonth}-25`,
+            "endDate": `${currentYear}-${currentMonth}-29`,
+            "total": 0
+        }
     };
     // store the pay periods demo data object in local storage
     localStorage.setItem('payPeriods', JSON.stringify(payPeriodsDemoData));
