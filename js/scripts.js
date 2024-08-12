@@ -1,3 +1,4 @@
+
 /* START JavaScript included with the Freelancer template */
 /*!
 * Start Bootstrap - Freelancer v7.0.7 (https://startbootstrap.com/theme/freelancer)
@@ -68,121 +69,31 @@ function dataTablesConfig(tableId) {
 }
 
 
-// adapted from Melody Lauer's custom button object
-function BtnObj(btnObj){
-    this.btn = btnObj;
-    this.btnHtml = $(this.btn).html();
+function popToast(toastText, toastType = 'info', toastDelay = 5000){
 
-    this.btnHTML = function(){
-        if($(this.btn).length > 0){
-            return $(this.btn).html();
-        } else {
-            return false;
-        }
-    }
+    const toastContainer = $('.toast-container');
+    const toastId = 'toast-' + Date.now();
 
-    this.spinOn = function(){
-        $(this.btn).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`);
-        $(this.btn).attr('disabled', true);
-    }
+    console.log({toastContainer});
 
-    this.spinOnSmall = function(){
-        $(this.btn).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
-        $(this.btn).attr('disabled', true);
-    }
+   let myToast = `<div id="${toastId}" class="toast align-items-center" role="${toastType}" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                            ${toastText}
+                            </div>
+                            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>`;
 
-    this.spinOff = function(optText=false){
-        if(optText){
-            $(this.btn).html(optText);
-        } else {
-            $(this.btn).html(this.btnHtml);
-        }
-        $(this.btn).attr('disabled', false);
-    }
+    toastContainer.html(myToast);
 
-    this.disable = function(){
-        $(this.btn).attr('disabled', true);
-    }
-
-    this.enable = function(){
-        $(this.btn).attr('disabled', false);
-    }
-
-    this.confirm = function(confirmClass, text, color = 'primary', warningText = false, size = 'regular'){
-    this.confirmOff();
-    let parent = $(this.btn).parent();
-    let btnEl = $(this.btn);
-    parent.addClass('confirm-parent');
-
-    let confirmCont = `<div class="cancel-confirm-container"></div>`;
-
-    if(warningText){
-        popToast(warningText);
-    } else if(size == 'small'){
-        popToast(`<div>${warningText}</div><div>Click <i class="fa-solid fa-check"></i> to confirm or <i class="fa-solid fa-xmark"></i> to cancel.</div>`);
-    }
-
-    parent.html(confirmCont);
-    let canConDiv = parent.find('.cancel-confirm-container');
-    canConDiv.html(`<div class="can-con-btn"></div>`);
-
-    let btnDiv = canConDiv.find('.can-con-btn');
-    btnDiv.html(btnEl);
-
-    $(this.btn).attr('disabled',true);
-    $(this.btn).addClass('slide-over me-0');
-
-    let cancel = 'Cancel';
-
-    if (size == 'small'){
-        text = `<i class="fa-solid fa-check"></i>`;
-        cancel = `<i class="fa-solid fa-xmark"></i>`;
-    }
-
-    let confirmBtn = `<button type="button" class="btn btn-outline-secondary border-0 cancelConfirmFlare mx-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel">${cancel}</button>
-    <button type="button" class="btn btn-outline-${color} border-0 ${confirmClass} confirmFlare" data-bs-toggle="tooltip" data-bs-placement="top" title="Confirm">${text}</button>`;
-
-
-    canConDiv.append(confirmBtn);
-
-    let canclBtn = parent.find('.cancelConfirmFlare');
-    let confrBtn = parent.find('.confirmFlare');
-
-    let tempBtns = {
-        cancel: canclBtn,
-        confirm: confirmBtn
-    }
-
-    return tempBtns;
-    }
-
-    this.confirmSmall = function(confirmClass, color = 'primary', warningText = false){
-    this.confirm(confirmClass, 'noText', color, warningText, 'small');
-    }
-
-    this.confirmOff = function(){
-        let container = $('.cancel-confirm-container');
-        let btnContainer = container.find('.can-con-btn');
-        let btn = btnContainer.find('button');
-        let parent = container.parent();
-        parent.removeClass('confirm-parent');
-        container.remove();
-        parent.html(btn);
-        $(btn).removeClass('slide-over me-0');
-        $(btn).attr('disabled', false);
-    }
+    const toastElement = document.getElementById(toastId);
+    const toastInstance = new bootstrap.Toast(toastElement);
+    toastInstance.show();
 
 }
 
-// function for confirm button
-function btnFlare(btnObj){
-    console.log("Button clicked!");
-    const newBtnObj = new BtnObj(btnObj);
-    $(document).on('click', '.cancelConfirm, .confirmFlare', function(){
-        newBtnObj.confirmOff();
-    })
-    return newBtnObj;
-}
+
 
 // demo data
 function setUpDemoData(month=false){
@@ -208,9 +119,8 @@ function setUpDemoData(month=false){
         lastMonth = padToTwoDigits(currentMonth - 1);
         lastMonthYear = currentYear;
     }
-    
-    console.log({lastMonth});
-    console.log({lastMonthYear});
+    // console.log({lastMonth});
+    // console.log({lastMonthYear});
 
     // define the time entries demo data object
     let timeEntriesDemoData = {
@@ -379,7 +289,6 @@ function setUpDemoData(month=false){
     };
     // store the time entries demo data object in local storage
     localStorage.setItem('timeEntries', JSON.stringify(timeEntriesDemoData));
-    // let lastMonth = month - 1;
     let payPeriodsDemoData = {
         "id-1718138962936": {
             "startDate": `${lastMonthYear}-${lastMonth}-28`,
@@ -414,18 +323,17 @@ function setUpDemoData(month=false){
 
    
     let timeEntryData = AppData.timeEntryData;
-    console.log({timeEntryData});
-    console.log(typeof timeEntryData);
+    // console.log({timeEntryData});
+    // console.log(typeof timeEntryData);
 
     let payPeriodData = AppData.payPeriodData;
     $.each(payPeriodData, function(index, v) {
-        console.log({index});
-        console.log({v});
+        // console.log({index});
+        // console.log({v});
         loopPpDateRange(index, v.startDate, v.endDate);
-        // updatePayPeriodTotal(ppID, dateString, increment=true);
     });
     
 
     // reload page
-    // location.reload(); // KEEP ME!!! commented out for testing.
+    window.location.reload(); // KEEP ME!!! commented out for testing.
 }
