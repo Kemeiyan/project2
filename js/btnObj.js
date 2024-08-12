@@ -45,11 +45,11 @@ function BtnObj(btnObj){
         let btnEl = $(this.btn);
         parent.addClass('confirm-parent');
 
-        let confirmCont = `<div class="cancel-confirm-container"></div>`;
+        let confirmCont = `<div class="cancel-confirm-container d-flex"></div>`;
 
         console.log({warningText});
         if(warningText){
-            popToast(warningText);
+            popToast(warningText, 'danger');
         } else if(size == 'small'){
             popToast(`<div>${warningText}</div><div>Click <i class="fa-solid fa-check"></i> to confirm or <i class="fa-solid fa-xmark"></i> to cancel.</div>`);
         }
@@ -71,8 +71,8 @@ function BtnObj(btnObj){
             cancel = `<i class="fa-solid fa-xmark"></i>`;
         }
 
-        let confirmBtn = `<button type="button" class="btn btn-outline-secondary border-0 cancelConfirmFlare mx-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel">${cancel}</button>
-        <button type="button" class="btn btn-outline-${color} border-0 ${confirmClass} confirmFlare" data-bs-toggle="tooltip" data-bs-placement="top" title="Confirm">${text}</button>`;
+        let confirmBtn = `<div><button type="button" class="btn btn-outline-secondary border-0 cancelConfirmFlare mx-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel">${cancel}</button></div>
+        <div><button type="button" class="btn btn-outline-${color} border-0 ${confirmClass} confirmFlare" data-bs-toggle="tooltip" data-bs-placement="top" title="Confirm">${text}</button></div>`;
 
 
         canConDiv.append(confirmBtn);
@@ -106,11 +106,11 @@ function BtnObj(btnObj){
 
 }
 
-// function for confirm button
+// function for confirmation buttons
 function btnFlare(btnObj){
-    console.log("Button clicked!");
     const newBtnObj = new BtnObj(btnObj);
-    $(document).on('click', '.cancelConfirm, .confirmFlare', function(){
+    // dismiss the cancel/confirm buttons
+    $(document).on('click', '.cancelConfirmFlare, .confirmFlare', function(){
         newBtnObj.confirmOff();
     })
     return newBtnObj;

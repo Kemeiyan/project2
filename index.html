@@ -113,7 +113,7 @@
             </div>
         </form>
     </div>
-    <div class="toast-container position-static"></div>
+    <div class="toast-container position-fixed"></div>
 </div>
 
 <!-- Bootstrap core JS-->
@@ -489,12 +489,30 @@ function toggleDisabled(selector, disable=true){
                 buildCalendar();
             })
 
+
+function getResponsiveClasses() {
+    // Add the appropriate responsive classes based on the screen size
+    if (window.innerWidth < 576) {
+        return 'sm';
+    } else if (window.innerWidth < 992) {
+        return 'md';
+    } else {
+        return 'lg';
+    }
+}
+
+
             // delete time entry
             $(document).on('click', '#delTimeEntry', function(){
                 console.log("Delete time entry button clicked!");
                 // delete confirmation
                 let delBf = btnFlare($(this));
-                delBf.confirm('confirmDelTe','Confirm Delete','danger','Are you sure you want to delete this time entry?');
+
+                if(getResponsiveClasses() == 'lg'){
+                    delBf.confirm('confirmDelTe','Confirm Delete','danger','Are you sure you want to delete this time entry?');
+                }else{
+                    delBf.confirmSmall('confirmDelTe','danger','Are you sure you want to delete this time entry?');
+                }
             })
 
             // delete time entry confirmation
@@ -518,7 +536,13 @@ function toggleDisabled(selector, disable=true){
                 console.log("Delete pay period button clicked!");
                 // delete confirmation
                 let delBf = btnFlare($(this));
-                delBf.confirm('confirmDelPp','Confirm Delete','danger','Are you sure you want to delete this pay period?');
+
+                if(getResponsiveClasses() == 'lg'){
+                    delBf.confirm('confirmDelPp','Confirm Delete','danger','Are you sure you want to delete this pay period?');
+                }else{
+                    delBf.confirmSmall('confirmDelPp','danger','Are you sure you want to delete this pay period?');
+                }
+                
             })
 
             // delete pay period confirmation

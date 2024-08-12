@@ -94,7 +94,6 @@ function popToast(toastText, toastType = 'info', toastDelay = 5000){
 }
 
 
-
 // demo data
 function setUpDemoData(month=false){
     let currentYear = new Date().getFullYear();
