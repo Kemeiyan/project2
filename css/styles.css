@@ -5255,6 +5255,11 @@ textarea.form-control-lg {
   border: var(--bs-toast-border-width) solid var(--bs-toast-border-color);
   box-shadow: var(--bs-toast-box-shadow);
   border-radius: var(--bs-toast-border-radius);
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 .toast.showing {
   opacity: 0;
@@ -11148,6 +11153,12 @@ a.disabled {
   /* border: 0.05px solid var(--bs-table-border-color); */
 }
 
+
+table.calendar {
+  /* width: auto; */
+  /* width: 100%; */
+}
+
 table.calendar > td {
     /* border: 0.05px solid var(--bs-table-border-color) !important; */
     /* border: 0.05px solid red !important; */
@@ -11187,8 +11198,10 @@ td.pp-end{
 }
 
 td.cal-day {
-  width: 100px;
-  height: 100px;
+  /* width: 100px;
+  height: 100px; */
+  /* width: auto;
+  height: auto; */
   border: 0.5px solid var(--bs-border-color-translucent);
 }
 
@@ -11201,7 +11214,7 @@ th.dow{
   background-color: var(--bs-white)!important; 
   /* border-color: var(--bs-table-border-color)!important; */
   border: 0;
-  width: 100px;
+  /* width: 100px; */'s
 }
 
 th.pp-total, td.pp-total {
@@ -11209,7 +11222,8 @@ th.pp-total, td.pp-total {
   /* border-color: var(--bs-table-border-color)!important; */
   border-right: 0;
   border-bottom: 0.5px solid var(--bs-border-color-translucent);
-  width: 100px;
+  /* width: 100px; */
+  /* width: auto; */
 }
 
 .pp-amt {
@@ -11233,12 +11247,15 @@ th.pp-total, td.pp-total {
 
 
 /* experimental: variable sizes for calendar td's based on device screen size */
-/* @media (min-width: 1200px) {
+@media (min-width: 576px) {
   .cal-day {
     width: 100px;
     height: 100px;
   }
-} */
+  th.pp-total, td.pp-total {
+    width: 100px;
+  }
+}
 
 /* experimental: variable sizes for calendar td's based on device screen size */
 /* @media (min-width: 1200px) {
