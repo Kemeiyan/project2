@@ -80,8 +80,10 @@
         </form>
     </div>
 
-    <div class=" calendarContainer card-mp">
+    <div class="card-mp">
+        <div class="calendarContainer table-responsive">
         <!-- calendar goes here -->
+         </div>
     </div>
 
     <div class="mx-3">
@@ -276,7 +278,8 @@ const AppData = {
                     });
             })
 
-            $(document).on('click', 'td:not(:last-child)', function(){
+            $(document).on('click', 'td:not(.pp-total)', function(){
+            // $(document).on('click', 'td:not(:last-child)', function(){
             // $(document).on('click', 'td:not(:nth-last-child(-n+2))', function(){
 
               // !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -385,11 +388,10 @@ const AppData = {
                 $('.te-form-container').addClass('hidden').removeClass('unhidden'); // KEEP ME! just commented out while testing
 
                 // find timeEntryCont div by date on td
-                let tsCont = $(`td[data-date="${dateString}"] .timeEntryCont`);
-                // define daySummary
-                let daySummary = dateString ? `${formData.dayTotal} hrs` : `0`;
-                // update td with new daySummary
-                tsCont.html(`<div>${daySummary}</div>`);
+                let teCont = $(`td[data-date="${dateString}"] .timeEntryCont`);
+                // format day total for display
+                let daySummary = dayTotalCalendarFormat(formData.dayTotal);
+                teCont.html(`${daySummary}`);
 
             // Update pay period if it exists
                 // check to see if date is within an existing pay period
@@ -397,22 +399,14 @@ const AppData = {
                 if(ppID){
                     // loop through dates in pay period and recalculate total hours for pay period
                     loopPpDateRange_v2(ppID);
-                    
-                    // ?????need to reload entire calendar??? 
-                    // window.location.reload();
-                    // ?????or can we just update the pay period total cell?...
-                    //  would have to update just the pp total link since we're leaving it open to have multiple pay periods within a single week...
-                    //  this is what the link looks like:
-                    //      <div><a href="#" class="ppTotalLink" title="${ppRange}" data-enddate="${dateString}" data-ppid="${dayPpID}">${payPeriodTotal} hrs</a></div>
-                    
+            
                     // update pay period total link (instead of reloading entire calendar)
                     let newPpTotal = AppData.payPeriodData[ppID].total;
-                    // console.log ({newPpTotal});
                     // find link for corresponding pay period
                     let ppLink = $(`a[data-ppid="${ppID}"].ppTotalLink`);
                     // update text of pay period total link so we don't have to reload entire calendar
                     if(ppLink.length){
-                        ppLink.text(newPpTotal);
+                        ppLink.text(`${newPpTotal} hrs`);
                     }
                     // console.log(ppLink);
                 // }else{ 
@@ -463,7 +457,7 @@ const AppData = {
                 let changedInput = $(this);
                 console.log({changedInput});
                 console.log(changedInput);
-                refreshDayTotal($(this));
+                refreshDayTotalInp($(this));
             })
 
 
@@ -655,7 +649,6 @@ function loopPpDateRange_v2(ppID){
 
     // return ppTotal;
 }
-
 
 // function to loop through a date range 
 // so that we can calculate the pay period total for the date range 
@@ -858,14 +851,13 @@ function toggleDisabled(selector, disable=true){
     if(disable == true){
         btn.addClass('disabled');
     }
-    
 }
 
 function getResponsiveClasses() {
     console.log('we getting the responsive classes!');
     console.log(window.innerWidth);
     // Add the appropriate responsive classes based on the screen size
-    if (window.innerWidth < 576) {
+    if (window.innerWidth < 576 || window.innerHeight < 576) { // check both height and width otherwise rotating phone will trigger larger screen size styling
         return 'sm';
     } else if (window.innerWidth < 992) {
         return 'md';
@@ -874,61 +866,144 @@ function getResponsiveClasses() {
     }
 }
 
+// function to dynamically add total hours for the day as time is being entered
+function refreshDayTotalInp(timeInpElement){
+    // start time, end time, or break duration was modified...update total hours for day
+    // console.log("Time changed!");
+    let form = timeInpElement.closest('form');
+
+    // retrieve values from form
+    let start = form.find('input[name="startTime"]').val();
+    let end = form.find('input[name="endTime"]').val();
+    let breakTime = form.find('input[name="breakDuration"]').val();
+
+    // check to see if both start time and end time have been entered before trying to do a bunch of math on an empty string
+    if(start != '' && end != ''){
+        // console.log('its gonna to okay to update total!');
+        // retrieve date from hidden input
+        let focusDate = form.find('#timeEntryDate').val();
+        // retrieve total input field
+        let totalInp = form.find('input[name="dayTotal"]');
+
+        // convert start/end times to datetime objects
+        let startDateTime = new Date(`${focusDate}T${start}:00`);
+        let endDateTime = new Date(`${focusDate}T${end}:00`);
+
+        // calculate difference between start and end times (in minutes)
+        let diffMinutes = (endDateTime - startDateTime) / 60000;
+        // subtract break time to get total minutes worked
+        let totalMinutes = diffMinutes - breakTime;
+
+        // convert minutes to hours/minutes
+        let hours = Math.floor(totalMinutes / 60);
+        let minutes = totalMinutes % 60;
+        // convert total time to decimal hours
+        let totalTimeWorked = (hours + (minutes / 60)).toFixed(2);
+
+        // populate total field
+        totalInp.val(totalTimeWorked);
+    }
+}
+
+// quickly populate form with test data via console
+function testDataDay(){
+    // populate form with test data
+    $('input[name="startTime"]').val('08:00');
+    $('input[name="endTime"]').val('16:00');
+    $('input[name="breakDuration"]').val('0');
+    $('input[name="dayTotal"]').val('8.00');
+}
+
+// create a basic unique id generator since we're not using a database at the moment
+function generateUniqueId() {
+    return 'id-' + new Date().getTime();
+}
+
+function usDateFormat(dateString){
+    // Split the date string to reformat to us format
+    let [year, month, day] = dateString.split("-");
+    // Format the date as "MM/DD/YYYY"
+    let formattedDate = `${month}/${day}/${year}`;
+    return formattedDate;
+}
+
+function decimalHoursFormat(hours, decimals=2){
+    // round to specified number of decimal places
+    let formattedHours = parseFloat(hours).toFixed(decimals);
+    // trim any trailing zeroes 
+    //  (look for one or more trailing zeroes OR decimal point followed by one or more trailing zeroes and replace with empty string) 
+    //  $=asserts position at end of string
+    formattedHours = formattedHours.toString().replace(/(\.0+|0+)$/, '');
+    return formattedHours;
+}
+
+function dayTotalCalendarFormat(dayTotal){
+    // format day total for display in calendar td
+    // used when we initially build the calendar and when we update a time entry for a single day
+    // get approximate size of display for variable styling
+    let screenSize = getResponsiveClasses();
+    let daySummary;
+    // various space saving measures for small screens
+    if(screenSize == 'sm'){ 
+        // round day total to 1 decimal place and remove trailing 0's
+        let roundDayTotal = decimalHoursFormat(dayTotal,1);
+        daySummary = `${roundDayTotal}h`;
+        // dayTotalCont.html(`${roundDayTotal}h`);
+    }else{
+        // i think the data is saved with only 2 decimal places to begin with...
+        //   ...not sure if we want to truncate decimals or not when saving data, though
+
+        // round day total to 2 decimal places and remove trailing 0's
+        let roundDayTotal = decimalHoursFormat(dayTotal,2);
+        // dayTotalCont.html(`${roundDayTotal} hrs`);
+        daySummary = `${roundDayTotal} hrs`;
+    }
+    console.log({daySummary});
+    return daySummary;
+
+}
+
+function getCalendarWeekNumber(date) {
+    // Get the first day of the year
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    
+    // Find the first Sunday of the year
+    const firstSunday = new Date(startOfYear);
+    firstSunday.setDate(firstSunday.getDate() + (7 - firstSunday.getDay()) % 7);
+    
+    // Calculate the number of days between the date and the first Sunday of the year
+    const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
+    
+    // Calculate the week number
+    return Math.floor(daysBetween / 7) + 1;
+}
+
+// Function to pad a number to two digits
+function padToTwoDigits(number) {
+        return number.toString().padStart(2, '0');
+    }
+
+// retrieve daily time entry data from local storage
+function getStoredDayData(){
+    var timeEntryData = localStorage.getItem('timeEntries');
+    return timeEntryData ? JSON.parse(timeEntryData) : {};
+}
+
+// retrieve pay period data from local storage
+function getStoredPayPeriodData(){
+    var payPeriodData = localStorage.getItem('payPeriods');
+    return payPeriodData ? JSON.parse(payPeriodData) : {};
+}
 
 
-
-
-            // function to dynamically add total hours for the day as time is being entered
-            function refreshDayTotal(timeInpElement){
-                // start time, end time, or break duration was modified...update total hours for day
-                console.log("Time changed!");
-                let form = timeInpElement.closest('form');
-
-                // retrieve values from form
-                let start = form.find('input[name="startTime"]').val();
-                let end = form.find('input[name="endTime"]').val();
-                let breakTime = form.find('input[name="breakDuration"]').val();
-                console.log({start});
-                console.log({end});
-
-                // check to see if both start time and end time have been entered before trying to do a bunch of math on an empty string
-                if(start != '' && end != ''){
-                    console.log('its gonna to okay to update total!');
-                    // retrieve date from hidden input
-                    let focusDate = form.find('#timeEntryDate').val();
-                    console.log({focusDate});
-
-                    // retrieve total input field
-                    let total = form.find('input[name="dayTotal"]');
-
-                    // console.log({total});
-                    // convert start/end times to datetime objects
-                    let startDateTime = new Date(`${focusDate}T${start}:00`);
-                    let endDateTime = new Date(`${focusDate}T${end}:00`);
-                    // console.log({startDateTime});
-                    // console.log({endDateTime});
-
-                    // calculate difference between start and end times (in minutes)
-                    let diffMinutes = (endDateTime - startDateTime) / 60000;
-
-                    // accommodate for break time
-                    let totalMinutes = diffMinutes - breakTime;
-
-                    // convert minutes to hours/minutes
-                    let hours = Math.floor(totalMinutes / 60);
-                    let minutes = totalMinutes % 60;
-
-                    // calculate total hours worked
-                    let totalTimeWorked = (hours + (minutes / 60)).toFixed(2);
-
-                    // console.log({totalTimeWorked});
-                    // populate total field
-                    total.val(totalTimeWorked);
-                }
-            }
-
-
-
+// get values for current day, month, and year
+function getCurrentDate(){
+    let today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+    let currentDay = today.getDate();
+    return {currentMonth, currentYear, currentDay};
+}
 
         /* form validation functions */
             // function to add/remove invalid feedback styling for a single input
@@ -962,15 +1037,6 @@ function getResponsiveClasses() {
                 form = $(form); // was just for testing
                 // set all form inputs to empty
                 form.find('input').val('');
-            }
-
-            // quickly populate form with test data via console
-            function testDataDay(){
-                // populate form with test data
-                $('input[name="startTime"]').val('08:00');
-                $('input[name="endTime"]').val('16:00');
-                $('input[name="breakDuration"]').val('0');
-                $('input[name="dayTotal"]').val('8.00');
             }
 
             // check that start and end times are not empty
@@ -1055,60 +1121,8 @@ function getResponsiveClasses() {
                 return true;
             }
             
-            // create a basic unique id generator since we're not using a database at the moment
-            function generateUniqueId() {
-                return 'id-' + new Date().getTime();
-            }
-
-            function usDateFormat(dateString){
-                // Split the date string to reformat to us format
-                let [year, month, day] = dateString.split("-");
-                // Format the date as "MM/DD/YYYY"
-                let formattedDate = `${month}/${day}/${year}`;
-                return formattedDate;
-            }
-
-            function getCalendarWeekNumber(date) {
-                // Get the first day of the year
-                const startOfYear = new Date(date.getFullYear(), 0, 1);
-                
-                // Find the first Sunday of the year
-                const firstSunday = new Date(startOfYear);
-                firstSunday.setDate(firstSunday.getDate() + (7 - firstSunday.getDay()) % 7);
-                
-                // Calculate the number of days between the date and the first Sunday of the year
-                const daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
-                
-                // Calculate the week number
-                return Math.floor(daysBetween / 7) + 1;
-            }
-
-            // Function to pad a number to two digits
-            function padToTwoDigits(number) {
-                    return number.toString().padStart(2, '0');
-                }
-
-            // retrieve daily time entry data from local storage
-            function getStoredDayData(){
-                var timeEntryData = localStorage.getItem('timeEntries');
-                return timeEntryData ? JSON.parse(timeEntryData) : {};
-            }
-
-            // retrieve pay period data from local storage
-            function getStoredPayPeriodData(){
-                var payPeriodData = localStorage.getItem('payPeriods');
-                return payPeriodData ? JSON.parse(payPeriodData) : {};
-            }
 
 
-            // get values for current day, month, and year
-            function getCurrentDate(){
-                let today = new Date();
-                let currentMonth = today.getMonth();
-                let currentYear = today.getFullYear();
-                let currentDay = today.getDate();
-                return {currentMonth, currentYear, currentDay};
-            }
 
             // Function to build the calendar
             function buildCalendar(month=false, year=false){
@@ -1170,28 +1184,34 @@ function getResponsiveClasses() {
                     let th = $('<th class="dow"></th>').text(v);
                     headerRow.append(th);
                 })
-                headerRow.append($('<th class="pp-total"></th>').text('Pay Period Total'));
+                if(screenSize != 'sm'){
+                    headerRow.append($('<th class="pp-total"></th>').text('Pay Period Total'));
+                }
+                
 
                 tblHead.append(headerRow);
                 
                 // get stored pay period data so we can populate the calendar with pay period totals and style the pay period dates
                 let ppData = AppData.payPeriodData;
                 // set up table body
-                let dx = 1;
+                let dx = 1; // initialize day of the month
+
+                // loop through weeks in month
                 for (let i = 0; i < 6; i++) {
-                    // console.log("--------------------");
+                    console.log("--------------------");
+                    console.log("i is: " + i);
+                    if(dx > daysInMonth){ // don't add more rows if we've already gone through all the days in the month
+                        break;
+                    }
                     let bodyRow = $('<tr></tr>');
                     let payPeriodTotal = false; // initialize pay period total variable for this week (should ideally only have one pay period total per week)
                     let ppTotalHtml = ''; // initialize pay period total html for this week (append to this string if there are multiple pay periods ending in the same week)
 
+                    // loop through days in week
                     for (let j = 0; j < 7; j++) {
                         // console.log("j is: " + j);
                         let dateString = `${displayYear}-${padToTwoDigits(displayMonth + 1)}-${padToTwoDigits(dx)}`;
                         
-                        if(dateString == '2024-08-06'){
-                            console.log("this is the day!");
-                            console.log({dateString});
-                        }
                         let weekNum = getCalendarWeekNumber(new Date(dateString));                
                         let cell = $(`<td class="cal-day" data-date="${dateString}"></td>`);
                         if (i === 0 && j < firstDayInMonth) {
@@ -1199,11 +1219,14 @@ function getResponsiveClasses() {
                         } else if (dx <= daysInMonth) {
                             cell.dayDate = dx;
                             cell.html(`<div class="date-num">${dx}</div>
-                                        <div class="te-amt timeEntryCont"></div>`);
+                                        <div class="te-amt timeEntryCont"></div>
+                                        <div class="ppTotalSm"></div>`);
+                                        // <div class="ppTotalSm test"></div>
+                                        // <div class="te-amt timeEntryCont test"></div>`);
                             let timeEntryData = AppData.timeEntryData;
                             // console.log({timeEntryData});
 
-                            if(dateString == '2024-08-06'){ console.log({timeEntryData}); }
+                            // if(dateString == '2024-08-06'){ console.log({timeEntryData}); }
                             // if there is no data for this day, create a new object with default values
                             let dayData;
                             if(timeEntryData[dateString]){ 
@@ -1217,20 +1240,14 @@ function getResponsiveClasses() {
                                 }; // don't want to display dayTotal if it's 0
                             }
                             // console.log({dateString});
-                            // console.log({dayData});
 
                             // populate cell with day data
                             if(dayData.dayTotal && dayData.dayTotal != 0){
-                                let tsCont = cell.find('.timeEntryCont');
-
-                                if(screenSize == 'sm'){
-                                    // round day total to 1 decimal place
-                                    let roundDayTotal = parseFloat(dayData.dayTotal).toFixed(1);
-                                    tsCont.html(`${roundDayTotal}`);
-                                }else{
-                                    tsCont.html(`${dayData.dayTotal} hrs`);
-                                }
-                                
+                                let teCont = cell.find('.timeEntryCont');
+                                // format day total content for display (format number and add label) for variable screen size styling
+                                let daySummary = dayTotalCalendarFormat(dayData.dayTotal);
+                                // populate cell with day total  
+                                teCont.html(daySummary);   
                             }
 
                             // pay period related data/styling
@@ -1254,10 +1271,26 @@ function getResponsiveClasses() {
                                         let formattedStartDate = usDateFormat(ppData[dayPpID].startDate);
                                         let formattedEndDate = usDateFormat(ppData[dayPpID].endDate);
                                         let ppRange = `${formattedStartDate} to ${formattedEndDate}`;
-                                        ppTotalHtml += `<div><a class="ppTotalLink" title="${ppRange}" data-enddate="${dateString}" data-ppid="${dayPpID}">${payPeriodTotal} hrs</a></div>`;
+                                        ppTotalHtml += `<div class="test"><a class="ppTotalLink fst-italic" title="${ppRange}" data-enddate="${dateString}" data-ppid="${dayPpID}">${payPeriodTotal} hrs</a></div>`;
                                     }
                                     // add class to style day in pay period
                                     cell.addClass('pp-end');
+                                    
+                                    // do some stuff if we're on a small screen                                    
+                                    if(screenSize == 'sm'){
+                                        // round pay period total for small screen
+                                        // payPeriodTotal = decimalHoursFormat(payPeriodTotal,1);
+                                        
+                                        // check if pp total has one or more decimal places
+                                        //   ...if so, add a plus sign to the end of the total to indicate there are fractional hours
+                                        if(!Number.isInteger(payPeriodTotal)){
+                                            payPeriodTotal = decimalHoursFormat(payPeriodTotal,0);
+                                            payPeriodTotal = `${payPeriodTotal}+`;
+                                        }
+
+                                        // add pay period total to cell
+                                        cell.find('.ppTotalSm').html(`<div class="pp-amt-sm">${payPeriodTotal}</div>`);
+                                    }
                                 } else if(ppData[dayPpID] && ppData[dayPpID].startDate == dateString){
                                     cell.addClass('pp-start');
                                 } else {
@@ -1271,13 +1304,22 @@ function getResponsiveClasses() {
 
                         bodyRow.append(cell);
 
-                        // if there are 7 cells in the row, add the weekly total and pay period total cells
-                        if(j === 6){
-                            // add final column(s) to row (weekly total and pay period total)
-                            bodyRow.append(`<td class="pp-total">${ppTotalHtml}</td>`);
+
+                        // maybe leave out pp total colunm if on small screen...
+                        if(screenSize != 'sm'){
+                            // if there are 7 cells in the row, add the weekly total and pay period total cells
+                            if(j === 6){
+                                // add final column(s) to row (weekly total and pay period total)
+                                bodyRow.append(`<td class="pp-total test"><div class="d-flex align-items-start flex-column justify-content-end test">${ppTotalHtml}</div></td>`);
+                            }
                         }
+
                     }
 
+                    console.log("dx is: " + dx);
+                    console.log("appending body row!");
+                    console.log(bodyRow);
+                    // append row to table body
                     tblBody.append(bodyRow);
                 }
 
@@ -1286,39 +1328,7 @@ function getResponsiveClasses() {
                 calendarDiv.append(tbl);
             }
 
-      
-
-
-            // function getFormattedDateString(dateObj) {
-            //     // const date = new Date();
-
-            //     let day = String(dateObj.getDate()).padStart(2, '0');
-            //     let month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-            //     let year = dateObj.getFullYear();
-
-            //     let formattedDate = `${year}-${month}-${day}`;
-            //     console.log(formattedDate); // Example output: "2024-05-30"
-            //     return formattedDate;
-            // }
-            
-
-
-                        // function getCalendarWeekNumber_v3(date) {
-            //     console.log({date});
-            //     let startOfYear = new Date(date.getFullYear(), 0, 1);
-            //     console.log({startOfYear});
-            //     // Adjust startOfYear to the first Sunday of the year
-            //     let firstSunday = new Date(startOfYear.setDate(startOfYear.getDate() - startOfYear.getDay() + 7));
-            //     console.log({firstSunday});
-            //     // Calculate the number of days between the date and the first Sunday of the year
-            //     let daysBetween = Math.floor((date - firstSunday) / (24 * 60 * 60 * 1000));
-            //     console.log({daysBetween});
-            //     // Calculate the week number
-            //     return Math.floor(daysBetween / 7) + 1;
-            // }
-
     </script>
-
 
 </body>
 </html>

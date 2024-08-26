@@ -11136,7 +11136,10 @@ html {
 }
 
 .test {
-  border: 3px dashed red;
+  border: 2px dashed red;
+}
+.test2 {
+  border: 2px dashed yellow;
 }
 
 a.disabled {
@@ -11159,7 +11162,7 @@ table.calendar {
   /* width: 100%; */
 }
 
-table.calendar > td {
+/* table.calendar > td { */
     /* border: 0.05px solid var(--bs-table-border-color) !important; */
     /* border: 0.05px solid red !important; */
   /* border-color: rgba(255, 255, 255, 0.075) !important; */
@@ -11167,12 +11170,13 @@ table.calendar > td {
   /* border-width: 0.125rem !important; */
   /* width: 50px;
   height: 50px; */
-  padding: 10px;
-  position: relative; 
+
+  /* padding: 10px; */
+  /* position: relative;  */
   /* Ensure the pseudo-element is positioned relative to the td */
-  overflow: hidden; 
+  /* overflow: hidden;  */
   /* Ensure the pseudo-element doesn't overflow the td */
-}
+/* } */
 
 /* .table-cell-hover > tbody > tr > td:hover > * { */
   /* --bs-table-accent-bg: var(--bs-table-hover-bg); */
@@ -11187,7 +11191,10 @@ td.pp-middle{
   background-color: #D9CEDE!important;
 }
 td.pp-start{
-  background-color: #A085AD!important;
+  /* darker color */
+  background-color: #A085AD!important; 
+  /* lighter color */
+  /* background-color: #D9CEDE!important;  */
   border-top-left-radius: 2rem;
   border-bottom-left-radius: 2rem;
 }
@@ -11219,15 +11226,23 @@ th.dow{
 
 th.pp-total, td.pp-total {
   background-color: var(--bs-white)!important; 
-  /* border-color: var(--bs-table-border-color)!important; */
   border-right: 0;
   border-bottom: 0.5px solid var(--bs-border-color-translucent);
-  /* width: 100px; */
-  /* width: auto; */
+}
+
+.pp-total-flex {
+  /* display: flex;
+  align-items: center; */
+
+  /* display: grid;
+  place-items: center; */
+
+  /* height: 100%; */
+
 }
 
 .pp-amt {
-  text-align: left;
+  text-align: right;
   margin-top: 30px;
 }
 
@@ -11242,9 +11257,21 @@ th.pp-total, td.pp-total {
 
 .te-amt {
   text-align: left;
-  margin-top: 30px;
+  /* margin-top: 30px; */
+  font-style: italic;
+  /* added this fixed height so that for small screens the day total and pay period totals line up appropriately 
+  this might not end up being a good solution....keep an eye on it */
+  height: 30px; 
 }
 
+.pp-amt-sm {
+  padding: 0.2rem;
+  background-color: var(--bs-gray-200);
+  border: 0.125rem solid var(--bs-border-color);
+  border-radius: 1rem;
+  text-align: center;
+  
+}
 
 /* experimental: variable sizes for calendar td's based on device screen size */
 @media (min-width: 576px) {

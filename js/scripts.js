@@ -94,7 +94,10 @@ function popToast(toastText, toastType = 'info', toastDelay = 5000){
 }
 
 
-// demo data
+
+
+
+// set up demo data for time and pay tracker
 function setUpDemoData(month=false){
     let currentYear = new Date().getFullYear();
 
